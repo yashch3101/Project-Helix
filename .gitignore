@@ -1,4 +1,31 @@
-.venv
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Environment
 .env
-__pycache__
-node_modules
+
+# IDE
+.vscode/
+.idea/
+
+# Database
+*.db
+
+# Logs
+*.log
+
+# Storage
+storage/repositories/
+
+# Alembic
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cloned repositories
+apps/api/storage/repositories/
+storage/repositories/

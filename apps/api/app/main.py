@@ -3,6 +3,19 @@ from fastapi import FastAPI
 from app.core.config import settings
 from app.core.lifespan import lifespan
 from app.modules.health.router import router as health_router
+from app.modules.auth.router import router as auth_router
+
+from app.modules.projects.router import (
+    router as project_router,
+)
+
+from app.modules.repositories.router import (
+    router as repository_router,
+)
+
+from app.modules.scanner.router import (
+    router as scanner_router,
+)
 
 app = FastAPI(
     title=settings.app_name,
@@ -11,3 +24,7 @@ app = FastAPI(
 )
 
 app.include_router(health_router)
+app.include_router(auth_router)
+app.include_router(project_router)
+app.include_router(repository_router)
+app.include_router(scanner_router)
