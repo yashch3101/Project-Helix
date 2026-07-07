@@ -33,4 +33,10 @@ class Repository(BaseModel):
         )
     )
 
+    files = relationship(
+            "RepositoryFile",
+            back_populates="repository",
+            cascade="all, delete-orphan",
+        )
+    
     project = relationship(Project)

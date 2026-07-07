@@ -21,80 +21,128 @@ Project Helix is an AI-powered Software Engineering Intelligence Platform design
 
 ---
 
-## Authentication Module
+## Authentication
 
 - User Registration
 - User Login
 - JWT Authentication
 - Password Hashing (Argon2)
-- Protected Routes
-- Swagger Authorization
+- Protected APIs
 
 ---
 
 ## Project Management
 
-- Create Project
-- Project Persistence
-- Project APIs
+- Create Projects
 - Project Ownership
+- Project Persistence
 
 ---
 
 ## Repository Management
 
-- Import GitHub Repository
+- GitHub Repository Import
 - Git Repository Cloning
-- Repository Metadata Storage
 - Local Repository Storage
+- Repository Metadata
 
 ---
 
-## Repository Scanner (Foundation)
+## Repository Intelligence
 
-- Repository File Indexing
-- Recursive File Scanning
+- Recursive Repository Scanner
 - Language Detection
-- Repository Metadata Extraction
-- File Metadata Database
+- File Metadata Indexing
+- Repository Database Indexing
 
 ---
+
+## Code Intelligence
+
+- AST-based Code Parsing
+- Function Extraction
+- Class Extraction
+- Import Detection
+- Code Chunk Generation
+
+---
+
+## Embedding Engine
+
+- Code Embedding Generation
+- Batch Embedding Pipeline
+- PostgreSQL pgvector Storage
+- Semantic Code Search
+
+---
+
+## AI Chat Engine
+
+- Chat Sessions
+- Conversation History
+- History Builder
+- Query Rewriter
+- Context-aware Retrieval
+- RAG Pipeline
 
 # Current Architecture
 
-```
-Client
-   │
-   ▼
-FastAPI API
-   │
-   ├── Authentication
-   ├── Projects
-   ├── Repository Import
-   └── Scanner Engine
-          │
-          ▼
-PostgreSQL
-```
+                    Client
+                      │
+                      ▼
+               FastAPI Backend
+                      │
+     ┌────────────────┼────────────────┐
+     │                │                │
+     ▼                ▼                ▼
+Authentication   Project APIs    Repository APIs
+                                      │
+                                      ▼
+                              Repository Scanner
+                                      │
+                                      ▼
+                                 AST Parser
+                                      │
+                                      ▼
+                                Code Chunking
+                                      │
+                                      ▼
+                            Embedding Generator
+                                      │
+                                      ▼
+                           PostgreSQL + pgvector
+                                      │
+                                      ▼
+                              Semantic Retrieval
+                                      │
+                                      ▼
+                          Conversation-aware RAG
+                                      │
+                                      ▼
+                              Gemini AI Response
 
----
 
 # Tech Stack
+
+### AI
+
+- Google Gemini
+- Sentence Transformers
+- pgvector
+
+### Code Intelligence
+
+- AST Parser
+- Semantic Chunking
+- Vector Search
 
 ### Backend
 
 - FastAPI
-- SQLAlchemy 2.0
-- Alembic
-- Pydantic v2
-- AsyncPG
+- SQLAlchemy
 - PostgreSQL
+- Alembic
 - Docker
-
-### Authentication
-
-- JWT
-- Pwdlib (Argon2)
 
 ### Git
 
@@ -103,8 +151,7 @@ PostgreSQL
 ### Database
 
 - PostgreSQL
-
----
+- pgvector
 
 # Roadmap
 
@@ -114,27 +161,35 @@ PostgreSQL
 - Authentication
 - Projects
 - Repository Import
-- Repository Scanner V1
+- Repository Scanner
+- AST Code Parser
+- Code Chunking
+- Embedding Engine
+- Semantic Search
+- AI Chat Engine
+- Conversation Memory
+- Query Rewriter
+- RAG Retrieval
+
+---
 
 ## In Progress
 
-- Repository Intelligence Engine
+- Citation Engine
+
+---
 
 ## Upcoming
 
+- Streaming Responses
 - Framework Detection
-- Dependency Analyzer
-- AST Parser
-- Neo4j Knowledge Graph
-- Qdrant Vector Database
-- AI Engineering Agent
-- Autonomous Code Understanding
+- Dependency Graph
+- Repository Knowledge Graph
 - Multi-Agent System
-- RAG Pipeline
+- Autonomous Code Review
+- AI Code Generation
 - Engineering Memory
 - Autonomous Software Architect
-
----
 
 # Current Status
 
@@ -145,10 +200,16 @@ PostgreSQL
 | Project Management | Done |
 | Repository Management | Done |
 | Repository Scanner | Done |
-| Framework Detection | ⏳ |
-| AST Parser | ⏳ |
-| Knowledge Graph | ⏳ |
-| AI Engine | ⏳ |
+| AST Parser | Done |
+| Code Chunking | Done |
+| Embedding Engine | Done |
+| Semantic Search | Done |
+| AI Chat Engine | Done |
+| Conversation Memory | Done |
+| Query Rewriter | Done |
+| Citation Engine | Currently ongoing |
+| Streaming Responses | Pending |
+| Multi-Agent System | Pending |
 
 ---
 
@@ -162,3 +223,12 @@ Project Helix aims to become an AI-native software engineering platform capable 
 - Performing semantic code search
 - Reasoning over repositories using AI
 - Acting as an autonomous engineering assistant
+
+# Key Features
+
+- Semantic code search using vector embeddings
+- Context-aware AI chat over repositories
+- Conversation memory with query rewriting
+- AST-based code understanding
+- Repository indexing and semantic retrieval
+- Scalable RAG pipeline for software engineering

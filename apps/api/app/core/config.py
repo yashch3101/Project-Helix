@@ -19,6 +19,8 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    gemini_api_key: str
+
 
 @lru_cache
 def get_settings():
