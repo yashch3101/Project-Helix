@@ -42,10 +42,16 @@ class RetrievalRepository:
         top_k: int = 10,
     ):
 
+        print("=" * 80)
+        print("REPOSITORY ID:", repository_id)
+        print("TYPE:", type(repository_id))
+        print("=" * 80)
+
         sql = text("""
         SELECT
 
             c.id,
+            c.repository_file_id,
             c.chunk_name,
             c.chunk_type,
             c.start_line,
@@ -69,13 +75,42 @@ class RetrievalRepository:
         LIMIT :top_k
         """)
 
+        params = {
+            "repository_id": str(repository_id),
+            "embedding": query_vector,
+            "top_k": top_k,
+        }
+
+        print("=" * 80)
+        print("SQL PARAMS")
+        print(params)
+        print("=" * 80)
+
         result = await db.execute(
             sql,
-            {
-                "repository_id": str(repository_id),
-                "embedding": query_vector,
-                "top_k": top_k,
-            },
+            params,
         )
 
         return result.mappings().all()
+
+    @staticmethod
+    async def load_all_chunks(
+        db: AsyncSession,
+        repository_id,
+    ):
+
+        result = await db.execute(
+            select(CodeChunk)
+            .join(
+                RepositoryFile,
+                RepositoryFile.id == CodeChunk.repository_file_id,
+            )
+            .where(
+                RepositoryFile.repository_id == repository_id
+            )
+            .order_by(
+                CodeChunk.start_line.asc()
+            )
+        )
+
+        return result.scalars().all()

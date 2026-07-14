@@ -29,3 +29,14 @@ class GitService:
         )
 
         return str(repo_path)
+
+    @staticmethod
+    def pull(repository_path: str):
+
+        repo = Repo(repository_path)
+
+        origin = repo.remotes.origin
+
+        origin.pull()
+
+        return repository_path

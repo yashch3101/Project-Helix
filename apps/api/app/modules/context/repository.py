@@ -14,7 +14,7 @@ class ContextRepository:
         query_vector,
         top_k,
     ):
-        return await RetrievalRepository.vector_search(
+        return await RetrievalRepository.semantic_search(
             db=db,
             repository_id=repository_id,
             query_vector=query_vector,
@@ -50,3 +50,21 @@ class ContextRepository:
         )
 
         return result.scalars().all()
+
+    @staticmethod
+    async def get_chunk(
+        db,
+        chunk_id,
+    ):
+
+        result = await db.execute(
+
+            select(CodeChunk).where(
+
+                CodeChunk.id == chunk_id
+
+            )
+
+        )
+
+        return result.scalar_one_or_none()

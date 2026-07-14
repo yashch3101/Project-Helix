@@ -2,7 +2,9 @@ import google.generativeai as genai  # type: ignore[import]
 
 from app.core.config import settings
 # from app.modules.ai.prompt import SYSTEM_PROMPT
-from app.modules.retrieval.service import RetrievalService
+from app.modules.reasoning.service import ReasoningService
+from app.modules.ai.reasoning_formatter import ReasoningFormatter
+from app.modules.ai.reasoning_prompt import SYSTEM_PROMPT
 from app.modules.ai.prompt_builder import PromptBuilder
 
 genai.configure(
@@ -25,45 +27,48 @@ class AIService:
         search_query: str = "",
     ):
 
-        retrieval = await RetrievalService.search(
+        reasoning = await ReasoningService.build(
             db=db,
             repository_id=repository_id,
             query=search_query,
             top_k=10,
         )
 
+        yield {
+            "type": "reasoning",
+            "data": reasoning,
+        }
+
         # Build repository context
 
-        context = ""
-
-        for item in retrieval:
-
-            context += f"""
-            FILE:
-            {item["chunk_name"]}
-
-            TYPE:
-            {item["chunk_type"]}
-
-            LINES:
-            {item["start_line"]} - {item["end_line"]}
-
-            CONTENT:
-            {item["content"]}
-
-            ------------------------------------
-            """
+        context = ReasoningFormatter.format(
+            reasoning
+        )
 
         # Build final prompt
 
-        prompt = PromptBuilder.build(
-            history=history,
-            context=context,
-            question=question,
+        prompt = (
+            SYSTEM_PROMPT
+            + "\n\n"
+            + PromptBuilder.build(
+                history=history,
+                context=context,
+                question=question,
+            )
         )
+
+        print("=" * 80)
+        print("PROMPT SIZE:", len(prompt))
+        print("=" * 80)
 
         response = model.generate_content(
-            prompt
+            prompt,
+            stream=True,
         )
 
-        return response.text
+        for chunk in response:
+            if chunk.text:
+                yield {
+                    "type": "token",
+                    "data": chunk.text,
+                }

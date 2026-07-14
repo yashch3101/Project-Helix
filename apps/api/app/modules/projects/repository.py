@@ -22,7 +22,9 @@ class ProjectRepository:
     ):
         result = await db.execute(
             select(Project)
+            .order_by(Project.created_at.desc())
         )
+
         return result.scalars().all()
 
     @staticmethod

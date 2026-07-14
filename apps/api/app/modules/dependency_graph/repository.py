@@ -11,3 +11,11 @@ class DependencyRepository:
         dependency: CodeDependency,
     ):
         db.add(dependency)
+
+    @staticmethod
+    async def save_all(
+        db: AsyncSession,
+        dependencies: list[CodeDependency],
+    ):
+        db.add_all(dependencies)
+        await db.commit()

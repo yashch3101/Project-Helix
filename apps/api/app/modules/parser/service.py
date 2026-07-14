@@ -41,6 +41,17 @@ class ParserService:
 
             for item in symbols:
 
+                print("=" * 80)
+                print("NAME:", item["name"], len(str(item["name"] or "")))
+                print("TYPE:", item["type"], len(str(item["type"] or "")))
+                print("PARENT:", item["parent"], len(str(item["parent"] or "")))
+                print("RETURN:", item["return_type"], len(str(item["return_type"] or "")))
+                print("INHERITS:", len(str(item["inherits"] or "")))
+                print("DECORATORS:", len(str(item["decorators"] or "")))
+                print("PARAMETERS:", len(str(item["parameters"] or "")))
+                print("DOCSTRING:", len(str(item["docstring"] or "")))
+                print("=" * 80)
+
                 symbol = CodeSymbol(
                     repository_file_id=file.id,
                     symbol_name=item["name"],

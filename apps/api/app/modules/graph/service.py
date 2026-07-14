@@ -3,6 +3,7 @@ from sqlalchemy import select
 from app.modules.graph.builder import GraphBuilder
 from app.modules.graph.repository import GraphRepository
 from app.modules.parser.models import CodeSymbol
+from app.modules.repository_index.models import RepositoryFile
 
 
 class GraphService:
@@ -14,12 +15,30 @@ class GraphService:
     ):
 
         result = await db.execute(
-            select(CodeSymbol).where(
-                CodeSymbol.repository_id == repository_id
+
+            select(CodeSymbol)
+
+            .join(
+
+                RepositoryFile,
+
+                RepositoryFile.id == CodeSymbol.repository_file_id,
+
             )
+
+            .where(
+
+                RepositoryFile.repository_id == repository_id
+
+            )
+
         )
 
         symbols = result.scalars().all()
+
+        print("=" * 80)
+        print("SYMBOLS FOUND:", len(symbols))
+        print("=" * 80)
 
         edges = GraphBuilder.build(
             repository_id,

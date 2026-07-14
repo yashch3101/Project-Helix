@@ -171,6 +171,10 @@ class SymbolVisitor(ast.NodeVisitor):
 
             try:
                 called = ast.unparse(node.func)
+
+                if len(called) > 255:
+                    called = called[:255]
+                    
             except Exception:
                 called = "unknown"
 

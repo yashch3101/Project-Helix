@@ -60,6 +60,15 @@ class EmbeddingService:
                 texts
             )
 
+            print("=" * 80)
+            print("Batch Size:", len(batch))
+            print("Vectors Generated:", len(vectors))
+
+            if len(vectors) > 0:
+                print("Embedding Dimension:", len(vectors[0]))
+
+            print("=" * 80)
+
             embeddings = []
 
             for chunk, vector in zip(
@@ -73,6 +82,8 @@ class EmbeddingService:
                         embedding=vector,
                     )
                 )
+
+            print("Embeddings Ready To Insert:", len(embeddings))
 
             await EmbeddingRepository.bulk_insert(
                 db,

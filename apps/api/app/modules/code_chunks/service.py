@@ -6,6 +6,7 @@ from app.modules.code_chunks.models import CodeChunk
 from app.modules.code_chunks.repository import CodeChunkRepository
 from app.modules.parser.models import CodeSymbol
 from app.modules.repository_index.models import RepositoryFile
+from app.modules.indexing.service import IndexingService
 
 
 class CodeChunkService:
@@ -59,6 +60,14 @@ class CodeChunkService:
         await CodeChunkRepository.save_all(
             db,
             objects,
+        )
+
+        await IndexingService.rebuild(
+
+            db=db,
+
+            repository_id=repository_id,
+
         )
 
         return len(objects)

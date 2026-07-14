@@ -76,3 +76,45 @@ class RepositoryFile(BaseModel):
         Repository,
         back_populates="files",
     )
+
+    chunks = relationship(
+        "RepositoryChunk",
+        back_populates="repository_file",
+        cascade="all, delete-orphan",
+    )
+
+class RepositoryChunk(BaseModel):
+    __tablename__ = "repository_chunks"
+
+    repository_file_id: Mapped[str] = mapped_column(
+        ForeignKey(
+            "repository_files.id",
+            ondelete="CASCADE",
+        )
+    )
+
+    chunk_index: Mapped[int] = mapped_column(
+        Integer
+    )
+
+    start_line: Mapped[int] = mapped_column(
+        Integer
+    )
+
+    end_line: Mapped[int] = mapped_column(
+        Integer
+    )
+
+    content: Mapped[str] = mapped_column(
+        String
+    )
+
+    embedding_status: Mapped[str] = mapped_column(
+        String(30),
+        default="pending",
+    )
+
+    repository_file = relationship(
+        "RepositoryFile",
+        back_populates="chunks",
+    )

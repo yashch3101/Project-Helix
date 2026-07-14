@@ -1,0 +1,5 @@
+VECTOR_TOP_K = 30
+
+BM25_TOP_K = 30
+
+RERANK_TOP_K = 8
