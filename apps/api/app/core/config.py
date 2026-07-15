@@ -19,7 +19,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    gemini_api_key: str
+    groq_api_key: str
 
 
 @lru_cache

@@ -12,6 +12,16 @@ from app.modules.reasoning.trace_builder import (
     TraceBuilder,
 )
 
+from app.modules.reasoning.evidence_builder import (
+    EvidenceBuilder,
+)
+
+from app.modules.reasoning.impact import (
+    ImpactAnalyzer,
+)
+
+from app.modules.impact.service import ImpactService
+
 from app.modules.context.service import ContextService
 
 
@@ -80,6 +90,48 @@ class ReasoningPipeline:
 
         })
 
+        evidence = EvidenceBuilder.build({
+
+            "retrieval": retrieval,
+
+            "graph": graph,
+
+            "dependency": dependency,
+
+            "context": context,
+
+        })
+
+        impact = ImpactAnalyzer.analyze({
+
+            "graph": graph,
+
+        })
+
+        impact_analysis = []
+
+        processed = set()
+
+        for edge in graph:
+
+            if edge.source_symbol in processed:
+                continue
+
+            processed.add(edge.source_symbol)
+
+            result = await ImpactService.analyze(
+                db=db,
+                repository_id=repository_id,
+                symbol=edge.source_symbol,
+            )
+
+            impact_analysis.append(result)
+
+            print("=" * 80)
+            print("IMPACT ANALYSIS")
+            print(impact_analysis)
+            print("=" * 80)
+
         return {
 
             "retrieval": retrieval,
@@ -91,5 +143,11 @@ class ReasoningPipeline:
             "context": context,
 
             "trace": trace,
+
+            "evidence": evidence,
+
+            "impact": impact,
+
+            "impact_analysis": impact_analysis,
 
         }

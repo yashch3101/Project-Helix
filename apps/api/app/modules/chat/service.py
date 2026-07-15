@@ -105,7 +105,7 @@ class ChatService:
 
         retrieval = []
 
-        assistant_answer = ""
+        reasoning = None
 
         print("=" * 80)
         print("CHAT SESSION REPOSITORY ID")
@@ -121,8 +121,26 @@ class ChatService:
             search_query=search_query,
         ):
 
-            if event["type"] == "retrieval":
-                retrieval = event["data"]
+            if event["type"] == "reasoning":
+
+                reasoning = event["data"]
+
+                retrieval = reasoning["retrieval"]
+
+                yield ChatEvent.reasoning(
+                    {
+                        "trace": reasoning["trace"]
+                    }
+                )
+
+                yield ChatEvent.evidence(
+                    reasoning["evidence"]
+                )
+
+                yield ChatEvent.impact(
+                    reasoning["impact"]
+                )
+
                 continue
 
             if event["type"] == "token":

@@ -1,19 +1,10 @@
-import google.generativeai as genai  # type: ignore[import]
+from app.modules.ai.groq_client import GroqClient
 
-from app.core.config import settings
 # from app.modules.ai.prompt import SYSTEM_PROMPT
 from app.modules.reasoning.service import ReasoningService
 from app.modules.ai.reasoning_formatter import ReasoningFormatter
 from app.modules.ai.reasoning_prompt import SYSTEM_PROMPT
 from app.modules.ai.prompt_builder import PromptBuilder
-
-genai.configure(
-    api_key=settings.gemini_api_key
-)
-
-model = genai.GenerativeModel(
-    "gemini-2.5-flash"
-)
 
 
 class AIService:
@@ -61,14 +52,9 @@ class AIService:
         print("PROMPT SIZE:", len(prompt))
         print("=" * 80)
 
-        response = model.generate_content(
-            prompt,
-            stream=True,
-        )
+        response = await GroqClient.generate(prompt)
 
-        for chunk in response:
-            if chunk.text:
-                yield {
-                    "type": "token",
-                    "data": chunk.text,
-                }
+        yield {
+            "type": "token",
+            "data": response,
+        }

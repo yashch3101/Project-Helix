@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { ChatMessage, AssistantMessage } from "../types/chat";
+import { ChatMessage, AssistantMessage, Evidence, Impact } from "../types/chat";
 import { getMessages, sendMessage  } from "../services/chat";
 
 export function useChat(
@@ -164,6 +164,32 @@ export function useChat(
 
         }
 
+        if (event === "reasoning") {
+
+            const reasoning = JSON.parse(data);
+
+            console.log("========== REASONING ==========");
+            console.log(reasoning);
+            console.log("===============================");
+
+            setMessages(prev => {
+
+                const copy = [...prev];
+
+                copy[copy.length - 1] = {
+
+                    ...copy[copy.length - 1],
+
+                    trace: reasoning.trace,
+
+                };
+
+                return copy;
+
+            });
+
+        }
+
         if (event === "citations") {
 
             const citations = JSON.parse(data);
@@ -177,6 +203,58 @@ export function useChat(
                     ...copy[copy.length - 1],
 
                     citations,
+
+                };
+
+                return copy;
+
+            });
+
+        }
+
+        if (event === "evidence") {
+
+            console.log("EVIDENCE EVENT");
+            console.log(data);
+
+            const evidence: Evidence[] =
+                JSON.parse(data);
+
+            setMessages(prev => {
+
+                const copy = [...prev];
+
+                copy[copy.length - 1] = {
+
+                    ...copy[copy.length - 1],
+
+                    evidence,
+
+                };
+
+                return copy;
+
+            });
+
+        }
+
+        if (event === "impact") {
+
+            console.log("IMPACT EVENT");
+            console.log(data);
+
+            const impact: Impact[] =
+                JSON.parse(data);
+
+            setMessages(prev => {
+
+                const copy = [...prev];
+
+                copy[copy.length - 1] = {
+
+                    ...copy[copy.length - 1],
+
+                    impact,
 
                 };
 

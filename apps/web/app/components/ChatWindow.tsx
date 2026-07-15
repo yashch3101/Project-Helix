@@ -61,6 +61,9 @@ export default function ChatWindow({
             role={message.role}
             content={message.content}
             citations={message.citations}
+            trace={message.trace}
+            evidence={message.evidence}
+            impact={message.impact}
 
             onCopy={
               message.role === "assistant"

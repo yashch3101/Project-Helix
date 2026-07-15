@@ -2,24 +2,17 @@ from app.modules.context_compression.service import (
     ContextCompressionService,
 )
 
-chunks = [
+chunks = []
 
-    {
-        "chunk_id": "1",
-        "content": "hello",
-    },
+for i in range(30):
 
-    {
-        "chunk_id": "2",
-        "content": "world",
-    },
+    chunks.append({
 
-    {
-        "chunk_id": "1",
-        "content": "hello",
-    },
+        "chunk_id": str(i),
 
-]
+        "content": f"Chunk {i}",
+
+    })
 
 compressed = ContextCompressionService.compress(
     chunks

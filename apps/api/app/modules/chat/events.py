@@ -38,3 +38,30 @@ class ChatEvent:
             "event: citations\n"
             f"data: {json.dumps(items)}\n\n"
         )
+
+    @staticmethod
+    def evidence(items):
+
+        return (
+            "event: evidence\n"
+            f"data: {json.dumps(items)}\n\n"
+        )
+
+
+    @staticmethod
+    def impact(items):
+
+        return (
+            "event: impact\n"
+            f"data: {json.dumps(items)}\n\n"
+        )
+
+    @staticmethod
+    def reasoning(data):
+
+        import json
+
+        return (
+            "event: reasoning\n"
+            f"data: {json.dumps(data)}\n\n"
+        )

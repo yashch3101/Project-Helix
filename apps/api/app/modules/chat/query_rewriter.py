@@ -1,14 +1,4 @@
-import google.generativeai as genai  # type: ignore[import]
-
-from app.core.config import settings
-
-genai.configure(
-    api_key=settings.gemini_api_key,
-)
-
-model = genai.GenerativeModel(
-    "gemini-2.5-flash",
-)
+from app.modules.ai.groq_client import GroqClient
 
 
 class QueryRewriter:
@@ -45,11 +35,9 @@ Rules:
 
         try:
 
-            response = model.generate_content(
-                prompt
-            )
+            response = await GroqClient.generate(prompt)
 
-            rewritten = response.text.strip()
+            rewritten = response.strip()
 
             if rewritten:
                 return rewritten

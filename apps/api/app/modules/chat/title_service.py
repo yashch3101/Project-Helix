@@ -1,15 +1,4 @@
-import google.generativeai as genai # type: ignore[import]
-
-from app.core.config import settings
-
-
-genai.configure(
-    api_key=settings.gemini_api_key
-)
-
-model = genai.GenerativeModel(
-    "gemini-2.5-flash"
-)
+from app.modules.ai.groq_client import GroqClient
 
 
 class TitleService:
@@ -35,8 +24,6 @@ User Message:
 {question}
 """
 
-        response = model.generate_content(
-            prompt
-        )
+        response = await GroqClient.generate(prompt)
 
-        return response.text.strip()
+        return response.strip()

@@ -26,5 +26,44 @@ export interface Citation {
 }
 
 export interface AssistantMessage extends ChatMessage {
-  citations?: Citation[];
+    citations?: Citation[];
+
+    trace?: ReasoningTrace;
+
+    evidence?: Evidence[];
+
+    impact?: Impact[];
+}
+
+export interface ReasoningTrace {
+
+    retrieval_chunks:number;
+
+    graph_edges:number;
+
+    dependencies:number;
+
+    context_chunks:number;
+
+    graph_nodes:{
+        id:string;
+        label:string;
+    }[];
+
+    graph_connections:{
+        source:string;
+        target:string;
+        relation:string;
+    }[];
+
+}
+
+export interface Evidence {
+    title: string;
+    description: string;
+}
+
+export interface Impact {
+    title: string;
+    description: string;
 }

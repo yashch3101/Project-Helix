@@ -8,6 +8,7 @@ from app.modules.dependency_graph.models import CodeDependency
 from app.modules.code_chunks.models import CodeChunk
 from app.modules.embeddings.models import CodeEmbedding
 from app.modules.chat.models import ChatSession, ChatMessage
+from app.modules.symbol_docs.models import SymbolDocumentation
 
 __all__ = [
     "User",
@@ -21,4 +22,5 @@ __all__ = [
     "CodeEmbedding",
     "ChatSession",
     "ChatMessage",
+    "SymbolDocumentation",
 ]

@@ -41,6 +41,26 @@ async def main():
 
         print("=" * 80)
 
+        print("EVIDENCE")
+
+        for item in result["evidence"]:
+
+            print(item)
+
+        print("=" * 80)
+
+        print("=" * 80)
+
+        print("IMPACT")
+
+        for item in result["impact"][:20]:
+
+            print(item)
+
+        print("=" * 80)
+
+        print("=" * 80)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

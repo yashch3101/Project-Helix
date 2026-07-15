@@ -8,11 +8,32 @@ import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Citation } from "../types/chat";
+import ReasoningPanel from "./ReasoningPanel";
+import EvidencePanel from "./EvidencePanel";
+import ReasoningFlow from "./ReasoningFlow";
+import CodeGraph from "./CodeGraph";
+import { Trace } from "../types/chat";
 
 type MessageProps = {
     role:"user"|"assistant";
     content:string;
     citations?: Citation[];
+
+    trace?: Trace;
+
+    evidence?: {
+      type: string;
+      symbol: string;
+      chunk_type: string;
+      lines: string;
+  }[];
+
+    impact?: {
+      from: string;
+      to: string;
+      relation: string;
+  }[];
+
     onRegenerate?: ()=>void;
     onEdit?: () => void;
     onCopy?: () => void;
@@ -22,6 +43,9 @@ export default function Message({
   role,
   content,
   citations,
+  trace,
+  evidence,
+  impact,
   onRegenerate,
   onEdit,
   onCopy,
@@ -266,6 +290,34 @@ export default function Message({
           </div>
 
           )}
+
+          {role === "assistant" && (
+
+            <>
+                <ReasoningPanel
+                    trace={trace}
+                    evidence={evidence}
+                    impact={impact}
+                />
+
+                {trace && (
+
+                  <ReasoningFlow
+                      trace={trace}
+                  />
+
+              )}
+
+                <EvidencePanel
+                    evidence={evidence}
+                />
+
+                <CodeGraph
+                  trace={trace}
+              />
+            </>
+
+        )}
       </div>
     </div>
   );

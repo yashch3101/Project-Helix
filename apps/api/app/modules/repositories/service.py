@@ -1,3 +1,5 @@
+import traceback
+
 from app.modules.parser.service import ParserService
 from app.modules.code_chunks.service import CodeChunkService
 from app.modules.embeddings.service import EmbeddingService
@@ -263,5 +265,5 @@ class RepositoryService:
         except Exception as e:
             print("=" * 80)
             print("BACKGROUND ERROR")
-            print(e)
+            traceback.print_exc()
             print("=" * 80)

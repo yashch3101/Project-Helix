@@ -8,6 +8,16 @@ from app.modules.parser.python_ast_parser import PythonParser
 from app.modules.parser.repository import ParserRepository
 from app.modules.repository_index.models import RepositoryFile
 
+from app.modules.symbol_docs.service import (
+    SymbolDocumentationService,
+)
+
+from app.modules.symbol_docs.utils import (
+    extract_symbol_code,
+)
+
+from app.modules.parser.factory import ParserFactory
+
 
 class ParserService:
 
@@ -17,6 +27,11 @@ class ParserService:
         repository_id,
     ):
 
+        print("=" * 80)
+        print("PARSER STARTED")
+        print(repository_id)
+        print("=" * 80)
+
         result = await db.execute(
             select(RepositoryFile).where(
                 RepositoryFile.repository_id == repository_id
@@ -25,19 +40,35 @@ class ParserService:
 
         files = result.scalars().all()
 
+        print("=" * 80)
+        print("TOTAL FILES:", len(files))
+        for f in files:
+            print(
+                f.file_name,
+                f.extension,
+                f.absolute_path
+            )
+        print("=" * 80)
+
         parsed = []
 
         for file in files:
 
-            if file.extension != ".py":
+            parser = ParserFactory.get_parser(
+                file.extension
+            )
+
+            if parser is None:
                 continue
 
-            if not os.path.exists(file.absolute_path):
-                continue
-
-            symbols = PythonParser.parse(
+            symbols = parser.parse(
                 file.absolute_path
             )
+
+            print("=" * 80)
+            print("FILE:", file.file_name)
+            print("SYMBOLS FOUND:", len(symbols))
+            print("=" * 80)
 
             for item in symbols:
 
@@ -70,6 +101,26 @@ class ParserService:
                 symbol = await ParserRepository.save(
                     db,
                     symbol,
+                )
+
+                print("=" * 80)
+                print("GENERATING DOC FOR:", symbol.symbol_name)
+                print("=" * 80)
+
+                # ----------------------------------------
+                # Generate AI Documentation
+                # ----------------------------------------
+
+                source = extract_symbol_code(
+                    file.absolute_path,
+                    symbol.line_start,
+                    symbol.line_end,
+                )
+
+                await SymbolDocumentationService.get_or_generate(
+                    db=db,
+                    symbol=symbol,
+                    source_code=source,
                 )
 
                 parsed.append(symbol)

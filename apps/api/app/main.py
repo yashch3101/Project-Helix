@@ -35,6 +35,10 @@ from app.modules.retrieval.router import (
     router as retrieval_router,
 )
 
+from app.modules.source_viewer.router import (
+    router as source_router,
+)
+
 from app.modules.ai.router import router as ai_router
 
 from app.modules.context.router import router as context_router
@@ -70,3 +74,4 @@ app.include_router(retrieval_router)
 app.include_router(ai_router)
 app.include_router(context_router)
 app.include_router(chat_router)
+app.include_router(source_router)
