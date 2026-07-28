@@ -196,6 +196,70 @@ class SymbolVisitor(ast.NodeVisitor):
 
         self.generic_visit(node)
 
+    def visit_Return(self, node):
+
+        if self.current_function:
+
+            try:
+                returned = ast.unparse(node.value)
+
+                if len(returned) > 255:
+                    returned = returned[:255]
+
+            except Exception:
+                returned = "unknown"
+
+            self.symbols.append(
+                {
+                    "name": returned,
+                    "type": "return",
+                    "line_start": node.lineno,
+                    "line_end": node.end_lineno,
+                    "parent": self.current_function,
+                    "docstring": None,
+                    "inherits": [],
+                    "decorators": [],
+                    "parameters": [],
+                    "return_type": None,
+                    "is_async": False,
+                }
+            )
+
+        self.generic_visit(node)
+
+    def visit_Assign(self, node):
+
+        if self.current_function:
+
+            for target in node.targets:
+
+                try:
+                    variable = ast.unparse(target)
+
+                    if len(variable) > 255:
+                        variable = variable[:255]
+
+                except Exception:
+                    variable = "unknown"
+
+                self.symbols.append(
+                    {
+                        "name": variable,
+                        "type": "variable",
+                        "line_start": node.lineno,
+                        "line_end": node.end_lineno,
+                        "parent": self.current_function,
+                        "docstring": None,
+                        "inherits": [],
+                        "decorators": [],
+                        "parameters": [],
+                        "return_type": None,
+                        "is_async": False,
+                    }
+                )
+
+        self.generic_visit(node)
+
 class PythonParser:
 
     @staticmethod

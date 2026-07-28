@@ -17,6 +17,38 @@ class GraphRetrievalRepository:
         symbol_name,
     ):
 
+        print("=" * 80)
+        print("GRAPH SEARCH SYMBOL")
+        print(symbol_name)
+        print("=" * 80)
+
+        check = await db.execute(
+
+            select(GraphEdge)
+
+            .where(
+                GraphEdge.repository_id == repository_id
+            )
+
+            .where(
+
+                or_(
+
+                    GraphEdge.source_symbol == symbol_name,
+
+                    GraphEdge.target_symbol == symbol_name,
+
+                )
+
+            )
+
+        )
+
+        print("=" * 80)
+        print("MATCHING GRAPH EDGES")
+        print(check.scalars().all())
+        print("=" * 80)
+
         SourceSymbol = aliased(CodeSymbol)
         TargetSymbol = aliased(CodeSymbol)
 

@@ -77,7 +77,7 @@ export function useChat(
 
         role: "assistant",
 
-        content: "Thinking...",
+        content: "",
 
         created_at: new Date().toISOString(),
 
@@ -152,9 +152,7 @@ export function useChat(
                 ...copy[copy.length - 1],
 
                 content:
-                copy[copy.length - 1].content === "Thinking..."
-                    ? token
-                    : copy[copy.length - 1].content + token,
+                    copy[copy.length - 1].content + token,
 
             };
 

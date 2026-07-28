@@ -7,32 +7,24 @@ import remarkGfm from "remark-gfm";
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { Citation } from "../types/chat";
+import { Citation, Evidence, Impact } from "../types/chat";
 import ReasoningPanel from "./ReasoningPanel";
 import EvidencePanel from "./EvidencePanel";
 import ReasoningFlow from "./ReasoningFlow";
 import CodeGraph from "./CodeGraph";
-import { Trace } from "../types/chat";
+import { ReasoningTrace } from "../types/chat";
+import ThinkingIndicator from "./ThinkingIndicator";
 
 type MessageProps = {
     role:"user"|"assistant";
     content:string;
     citations?: Citation[];
 
-    trace?: Trace;
+    trace?: ReasoningTrace;
 
-    evidence?: {
-      type: string;
-      symbol: string;
-      chunk_type: string;
-      lines: string;
-  }[];
+    evidence?: Evidence[];
 
-    impact?: {
-      from: string;
-      to: string;
-      relation: string;
-  }[];
+    impact?: Impact[];
 
     onRegenerate?: ()=>void;
     onEdit?: () => void;
@@ -51,41 +43,105 @@ export default function Message({
   onCopy,
 }: MessageProps) {
 
+  console.log("TRACE:", trace);
+
   const [copied, setCopied] = useState(false);
+
+  const isThinking = content === "Thinking...";
+
+  const renderedContent =
+      role === "assistant" && !isThinking
+          ? `${content}▌`
+          : content;
 
   return (
     <div
-      className={`mb-6 ${
-        role === "user"
-          ? "text-right"
-          : "text-left"
-      }`}
+      className={`
+        mb-8
+        flex
+        ${role === "user"
+          ? "justify-end"
+          : "justify-start"}
+      `}
     >
       <div
         className={`
-          inline-block
-          max-w-4xl
-          rounded-xl
-          px-5
-          py-3
+          relative
+          max-w-5xl
+          w-fit
+          rounded-2xl
+          border
+          shadow-xl
+          backdrop-blur-md
+          px-6
+          py-5
+          transition-all
+          duration-300
+
           whitespace-pre-wrap
           break-words
 
           ${
-            role === "user"
-              ? "bg-blue-600 text-white"
-              : "bg-zinc-800 text-white"
-          }
+            role==="user"
+
+            ?`
+            bg-gradient-to-br
+            from-blue-600
+            to-blue-700
+            border-blue-500/40
+            text-white
+            `
+
+            :`
+            bg-zinc-900/80
+            border-zinc-700
+            text-zinc-100
+            `
+            }
         `}
       >
 
+      <div className="mb-4 flex items-center gap-3">
+
+        {role === "user" ? (
+
+          <>
+            <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center font-bold">
+              Y
+            </div>
+
+            <div>
+              <div className="font-semibold">
+                You
+              </div>
+            </div>
+          </>
+
+        ) : (
+
+          <>
+            <div className="h-10 w-10 rounded-full bg-violet-600 flex items-center justify-center">
+              ⚡
+            </div>
+
+            <div>
+              <div className="font-semibold">
+                Project Helix
+              </div>
+
+              <div className="text-xs text-zinc-400">
+                Repository Intelligence
+              </div>
+            </div>
+          </>
+
+        )}
+
+      </div>
+
         {content === "Thinking..." && (
 
-        <div className="animate-pulse text-gray-400">
-
-            Thinking...
-
-        </div>
+            <ThinkingIndicator />
 
         )}
 
@@ -168,7 +224,7 @@ export default function Message({
             },
           }}
         >
-          {content}
+          {renderedContent}
         </ReactMarkdown>
 
         )}
@@ -198,53 +254,49 @@ export default function Message({
 
           )}
 
-        {role === "assistant" && onCopy && (
+        {role === "assistant" && (
 
-          <button
+          <div className="mt-5 flex flex-wrap gap-3">
 
-            onClick={onCopy}
+              {onCopy && (
 
-            className="
-            text-xs
-            px-3
-            py-1.5
-            rounded-md
-            bg-zinc-900
-            hover:bg-zinc-700
-            transition
-          "
+                  <button
+                      onClick={onCopy}
+                      className="
+                      h-9
+                      rounded-lg
+                      border
+                      border-zinc-700
+                      px-4
+                      text-sm
+                      hover:bg-zinc-800
+                      transition
+                      "
+                  >
+                      📋 Copy
+                  </button>
 
-          >
+              )}
 
-          📋 Copy
+              {onRegenerate && (
 
-          </button>
+                  <button
+                      onClick={onRegenerate}
+                      className="
+                      h-9
+                      rounded-lg
+                      border
+                      border-zinc-700
+                      px-4
+                      text-sm
+                      hover:bg-zinc-800
+                      transition
+                      "
+                  >
+                      ↻ Regenerate
+                  </button>
 
-          )}
-
-        {role === "assistant" && onRegenerate && (
-
-          <div className="mt-3 flex gap-3 items-center">
-
-          <button
-
-            onClick={onRegenerate}
-
-            className="
-              text-xs
-              px-3
-              py-1.5
-              rounded-md
-              bg-zinc-900
-              hover:bg-zinc-700
-              transition
-            "
-
-            >
-
-            ↻ Regenerate response
-
-          </button>
+              )}
 
           </div>
 
@@ -296,8 +348,6 @@ export default function Message({
             <>
                 <ReasoningPanel
                     trace={trace}
-                    evidence={evidence}
-                    impact={impact}
                 />
 
                 {trace && (

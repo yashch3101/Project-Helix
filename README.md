@@ -1,234 +1,219 @@
-# Project Helix
+# ⚡ Project Helix
 
-> Autonomous AI Engineering Intelligence Platform
+> Autonomous AI Repository Intelligence Platform for understanding, reasoning about, and interacting with large software codebases using Retrieval-Augmented Generation (RAG).
 
-Project Helix is an AI-powered Software Engineering Intelligence Platform designed to understand, analyze, reason about, and optimize software systems autonomously.
-
----
-
-# Current Progress
-
-## Phase 1 — Platform Foundation
-
-- FastAPI Backend
-- PostgreSQL Integration
-- SQLAlchemy Async ORM
-- Alembic Database Migrations
-- Dockerized PostgreSQL
-- Environment Configuration
-- Logging System
-- Health Check API
+Project Helix is an AI-powered software engineering platform that enables developers to import GitHub repositories and interact with them through natural language. It combines repository parsing, semantic search, AST analysis, vector embeddings, and conversational AI to provide context-aware answers grounded in the source code.
 
 ---
 
-## Authentication
-
-- User Registration
-- User Login
-- JWT Authentication
-- Password Hashing (Argon2)
-- Protected APIs
-
----
-
-## Project Management
-
-- Create Projects
-- Project Ownership
-- Project Persistence
-
----
-
-## Repository Management
-
-- GitHub Repository Import
-- Git Repository Cloning
-- Local Repository Storage
-- Repository Metadata
-
----
+# Features
 
 ## Repository Intelligence
 
-- Recursive Repository Scanner
-- Language Detection
-- File Metadata Indexing
-- Repository Database Indexing
-
----
+- Import public GitHub repositories
+- Automatic repository cloning
+- Recursive repository scanning
+- Language detection
+- Repository metadata indexing
 
 ## Code Intelligence
 
-- AST-based Code Parsing
-- Function Extraction
-- Class Extraction
-- Import Detection
-- Code Chunk Generation
+- AST-based parsing
+- Function extraction
+- Class extraction
+- Import analysis
+- Semantic code chunk generation
+
+## AI Knowledge Pipeline
+
+- Code embeddings using Sentence Transformers
+- PostgreSQL + pgvector vector storage
+- Semantic retrieval
+- Context-aware Retrieval-Augmented Generation (RAG)
+- Conversation-aware query rewriting
+- Persistent chat sessions
+
+## Project Management
+
+- User authentication (JWT)
+- Project creation
+- Multiple repositories per project
+- Repository switching
+- Chat history management
+- Rename/Delete conversations
 
 ---
 
-## Embedding Engine
+# System Architecture
 
-- Code Embedding Generation
-- Batch Embedding Pipeline
-- PostgreSQL pgvector Storage
-- Semantic Code Search
+```
+                     Next.js Frontend
+                             │
+                             ▼
+                     FastAPI Backend
+                             │
+     ┌───────────────────────┼────────────────────────┐
+     │                       │                        │
+     ▼                       ▼                        ▼
+ Authentication        Project APIs         Repository APIs
+                                                  │
+                                                  ▼
+                                         Repository Scanner
+                                                  │
+                                                  ▼
+                                             AST Parser
+                                                  │
+                                                  ▼
+                                            Code Chunking
+                                                  │
+                                                  ▼
+                                         Embedding Generator
+                                                  │
+                                                  ▼
+                                       PostgreSQL + pgvector
+                                                  │
+                                                  ▼
+                                         Semantic Retrieval
+                                                  │
+                                                  ▼
+                                   Conversation-aware RAG
+                                                  │
+                                                  ▼
+                                            Gemini AI
+```
 
 ---
-
-## AI Chat Engine
-
-- Chat Sessions
-- Conversation History
-- History Builder
-- Query Rewriter
-- Context-aware Retrieval
-- RAG Pipeline
-
-# Current Architecture
-
-                    Client
-                      │
-                      ▼
-               FastAPI Backend
-                      │
-     ┌────────────────┼────────────────┐
-     │                │                │
-     ▼                ▼                ▼
-Authentication   Project APIs    Repository APIs
-                                      │
-                                      ▼
-                              Repository Scanner
-                                      │
-                                      ▼
-                                 AST Parser
-                                      │
-                                      ▼
-                                Code Chunking
-                                      │
-                                      ▼
-                            Embedding Generator
-                                      │
-                                      ▼
-                           PostgreSQL + pgvector
-                                      │
-                                      ▼
-                              Semantic Retrieval
-                                      │
-                                      ▼
-                          Conversation-aware RAG
-                                      │
-                                      ▼
-                              Gemini AI Response
-
 
 # Tech Stack
 
-### AI
+## Frontend
 
-- Google Gemini
-- Sentence Transformers
-- pgvector
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
 
-### Code Intelligence
-
-- AST Parser
-- Semantic Chunking
-- Vector Search
-
-### Backend
+## Backend
 
 - FastAPI
-- SQLAlchemy
+- SQLAlchemy (Async)
 - PostgreSQL
 - Alembic
 - Docker
 
-### Git
+## AI
+
+- Groq
+- Sentence Transformers
+- pgvector
+- RAG Pipeline
+
+## Repository Processing
 
 - GitPython
+- Python AST
 
-### Database
+---
 
-- PostgreSQL
-- pgvector
+# Project Structure
+
+```text
+apps/
+├── api/
+│   ├── authentication
+│   ├── repositories
+│   ├── parser
+│   ├── retrieval
+│   ├── ai
+│   ├── chat
+│   └── ...
+│
+└── web/
+    ├── app
+    ├── components
+    ├── services
+    └── ...
+```
+
+---
+
+# Getting Started
+
+## Backend
+
+```bash
+cd apps/api
+
+python -m venv .venv
+
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
+uvicorn app.main:app --reload
+```
+
+## Frontend
+
+```bash
+cd apps/web
+
+npm install
+
+npm run dev
+```
+
+---
+
+# Current Capabilities
+
+- AI-powered repository understanding
+- Semantic code search
+- AST-based code intelligence
+- Multi-project management
+- Repository indexing
+- Persistent AI conversations
+- Query rewriting with conversation memory
+- Vector search using pgvector
+- Source-grounded repository answers
+
+---
 
 # Roadmap
 
-## Completed
+### Completed
 
-- Platform Foundation
 - Authentication
-- Projects
+- Project Management
 - Repository Import
 - Repository Scanner
-- AST Code Parser
-- Code Chunking
-- Embedding Engine
-- Semantic Search
-- AI Chat Engine
+- AST Parser
+- Semantic Chunking
+- Embedding Pipeline
+- Vector Search
+- AI Chat
 - Conversation Memory
-- Query Rewriter
-- RAG Retrieval
+- Query Rewriting
+- Repository Statistics
 
----
+### Planned
 
-## In Progress
-
-- Citation Engine
-
----
-
-## Upcoming
-
-- Streaming Responses
-- Framework Detection
-- Dependency Graph
-- Repository Knowledge Graph
-- Multi-Agent System
-- Autonomous Code Review
-- AI Code Generation
-- Engineering Memory
-- Autonomous Software Architect
-
-# Current Status
-
-| Module | Status |
-|---------|--------|
-| Platform Foundation | Done |
-| Authentication | Done |
-| Project Management | Done |
-| Repository Management | Done |
-| Repository Scanner | Done |
-| AST Parser | Done |
-| Code Chunking | Done |
-| Embedding Engine | Done |
-| Semantic Search | Done |
-| AI Chat Engine | Done |
-| Conversation Memory | Done |
-| Query Rewriter | Done |
-| Citation Engine | Currently ongoing |
-| Streaming Responses | Pending |
-| Multi-Agent System | Pending |
+- Source citations
+- Dependency graph visualization
+- Framework detection
+- Repository knowledge graph
+- Multi-agent reasoning
+- Autonomous code review
+- AI code generation
 
 ---
 
 # Vision
 
-Project Helix aims to become an AI-native software engineering platform capable of:
+Project Helix aims to become an autonomous AI software engineering platform capable of understanding large-scale repositories, reasoning across complex codebases, and assisting developers with architecture exploration, debugging, and software design through conversational AI.
 
-- Understanding entire software systems
-- Building software knowledge graphs
-- Detecting architecture automatically
-- Performing semantic code search
-- Reasoning over repositories using AI
-- Acting as an autonomous engineering assistant
+---
 
-# Key Features
+# License
 
-- Semantic code search using vector embeddings
-- Context-aware AI chat over repositories
-- Conversation memory with query rewriting
-- AST-based code understanding
-- Repository indexing and semantic retrieval
-- Scalable RAG pipeline for software engineering
+MIT License

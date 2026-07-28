@@ -27,7 +27,7 @@ async def create_project(
     return await ProjectService.create(
         db,
         payload,
-        current_user["sub"],
+        current_user.id,
     )
 
 
@@ -37,5 +37,9 @@ async def create_project(
 )
 async def get_projects(
     db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
-    return await ProjectService.get_all(db)
+    return await ProjectService.get_by_owner(
+        db,
+        current_user.id,
+    )

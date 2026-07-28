@@ -1,6 +1,9 @@
 from app.modules.retrieval.base import RetrievalStrategy
 from app.modules.retrieval.cache.bm25_cache import BM25Cache
 from app.modules.retrieval.tokenizer import Tokenizer
+from app.modules.indexing.service import (
+                IndexingService,
+            )
 
 
 class BM25Search(RetrievalStrategy):
@@ -16,10 +19,6 @@ class BM25Search(RetrievalStrategy):
         cache = BM25Cache.get(repository_id)
 
         if cache is None:
-
-            from app.modules.indexing.service import (
-                IndexingService,
-            )
 
             await IndexingService.rebuild(
 
@@ -45,13 +44,14 @@ class BM25Search(RetrievalStrategy):
 
         scores = bm25.get_scores(tokens)
 
-        print("TOTAL SCORES:", len(scores))
-
-        print("MAX SCORE:", max(scores))
+        if len(scores) > 0:
+            print("MAX SCORE:", float(scores.max()))
+        else:
+            print("MAX SCORE: 0")
 
         print(
             "NON ZERO SCORES:",
-            sum(score > 0 for score in scores)
+            int((scores > 0).sum())
         )
 
         ranked = sorted(

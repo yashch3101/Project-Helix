@@ -1,4 +1,5 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
+from collections import defaultdict
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.code_chunks.chunk_builder import ChunkBuilder
@@ -25,36 +26,115 @@ class CodeChunkService:
             )
         ).scalars().all()
 
+        await db.execute(
+
+            delete(CodeChunk).where(
+
+                CodeChunk.repository_file_id.in_(
+
+                    [file.id for file in files]
+
+                )
+
+            )
+
+        )
+
+        await db.commit()
+
         objects = []
+
+        result = await db.execute(
+
+            select(CodeSymbol).where(
+
+                CodeSymbol.repository_file_id.in_(
+
+                    [file.id for file in files]
+
+                )
+
+            )
+
+        )
+
+        all_symbols = result.scalars().all()
+
+        symbols_by_file = defaultdict(list)
+
+        for symbol in all_symbols:
+
+            symbols_by_file[symbol.repository_file_id].append(symbol)
+
+        print("=" * 80)
+        print("FILES:", len(files))
+        print("SYMBOLS:", len(all_symbols))
+        print("=" * 80)
+
+        from collections import Counter
+
+        counter = Counter(
+            symbol.symbol_type
+            for symbol in all_symbols
+        )
+
+        print("=" * 80)
+        print("SYMBOL TYPES")
+
+        for k, v in sorted(counter.items()):
+            print(f"{k}: {v}")
+
+        print("=" * 80)
 
         for file in files:
 
-            symbols = (
-                await db.execute(
-                    select(CodeSymbol).where(
-                        CodeSymbol.repository_file_id == file.id
-                    )
+            print(
+                f"{file.file_name} -> {len(symbols_by_file[file.id])} symbols"
+            )
+
+            for s in symbols_by_file[file.id]:
+                print(
+                    s.symbol_name,
+                    "->",
+                    s.symbol_type,
                 )
-            ).scalars().all()
 
             chunks = ChunkBuilder.build(
+
                 file.absolute_path,
-                symbols,
+
+                symbols_by_file[file.id],
+
+            )
+
+            print(
+                f"{file.file_name} -> {len(chunks)} chunks"
             )
 
             for chunk in chunks:
 
                 objects.append(
+
                     CodeChunk(
+
                         repository_file_id=file.id,
+
                         symbol_id=chunk["symbol_id"],
+
                         chunk_name=chunk["chunk_name"],
+
                         chunk_type=chunk["chunk_type"],
+
                         start_line=chunk["start_line"],
+
                         end_line=chunk["end_line"],
+
                         content=chunk["content"],
+
                         token_count=chunk["token_count"],
+
                     )
+
                 )
 
         await CodeChunkRepository.save_all(

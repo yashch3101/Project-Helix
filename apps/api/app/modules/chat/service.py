@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.chat.repository import ChatRepository
@@ -15,7 +17,7 @@ class ChatService:
     @staticmethod
     async def create_session(
         db: AsyncSession,
-        repository_id,
+        repository_id: UUID
     ):
 
         return await ChatRepository.create_session(
@@ -37,7 +39,10 @@ class ChatService:
         )
 
         if session is None:
-            raise Exception("Chat session not found")
+            raise HTTPException(
+                status_code=404,
+                detail="Chat session not found.",
+            )
 
         # 2. Load previous conversation
         history = await ChatRepository.get_messages(
@@ -68,22 +73,6 @@ class ChatService:
                 title=title,
             )
 
-            print("=" * 80)
-            print("CHAT TITLE:")
-            print(title)
-            print("=" * 80)
-
-        print("=" * 80)
-        print("ORIGINAL QUESTION:")
-        print(question)
-
-        print("-" * 80)
-
-        print("SEARCH QUERY:")
-        print(search_query)
-
-        print("=" * 80)
-
         # 3. Build repository context
         # context = await ContextService.build(
         #     db=db,
@@ -106,12 +95,6 @@ class ChatService:
         retrieval = []
 
         reasoning = None
-
-        print("=" * 80)
-        print("CHAT SESSION REPOSITORY ID")
-        print(session.repository_id)
-        print(type(session.repository_id))
-        print("=" * 80)
 
         async for event in AIService.ask(
             db=db,
@@ -173,7 +156,7 @@ class ChatService:
     @staticmethod
     async def list_sessions(
         db,
-        repository_id,
+        repository_id: UUID
     ):
 
         return await ChatRepository.list_sessions(
@@ -193,7 +176,10 @@ class ChatService:
         )
 
         if session is None:
-            raise Exception("Chat session not found")
+            raise HTTPException(
+                status_code=404,
+                detail="Chat session not found.",
+            )
 
         messages = await ChatRepository.get_session_messages(
             db=db,
@@ -215,7 +201,10 @@ class ChatService:
         )
 
         if session is None:
-            raise Exception("Chat session not found")
+            raise HTTPException(
+                status_code=404,
+                detail="Chat session not found.",
+            )
 
         await ChatRepository.update_title(
             db=db,
@@ -230,7 +219,7 @@ class ChatService:
     @staticmethod
     async def delete_all_sessions(
         db: AsyncSession,
-        repository_id,
+        repository_id: UUID
     ):
         await ChatRepository.delete_all_sessions(
             db=db,
@@ -251,7 +240,10 @@ class ChatService:
         )
 
         if session is None:
-            raise Exception("Chat session not found")
+            raise HTTPException(
+                status_code=404,
+                detail="Chat session not found.",
+            )
 
         await ChatRepository.delete_session(
             db=db,

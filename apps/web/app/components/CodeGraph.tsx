@@ -1,34 +1,82 @@
 "use client";
 
 import {
-
     Background,
-
     Controls,
-
     MiniMap,
-
     ReactFlow,
-
     Node,
-
     Edge,
-
+    Handle,
+    Position,
 } from "reactflow";
+
+import { FileCode2 } from "lucide-react";
 
 import "reactflow/dist/style.css";
 
 import dagre from "@dagrejs/dagre";
 
-import { Trace } from "../types/chat";
+import { ReasoningTrace } from "../types/chat";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type Props={
 
-    trace?:Trace;
+    trace?:ReasoningTrace;
 
 };
+
+function GraphNode({
+    data,
+}: {
+    data: ReasoningTrace["graph_nodes"][number];
+}) {
+    return (
+        <div className="min-w-[220px] rounded-xl border border-violet-500/20 bg-zinc-900/90 backdrop-blur-md shadow-lg hover:border-violet-500/40 transition-all">
+
+            <Handle
+                type="target"
+                position={Position.Top}
+            />
+
+            <div className="flex items-center gap-3 p-4">
+
+                <div className="rounded-lg bg-violet-500/10 p-2">
+
+                    <FileCode2
+                        size={18}
+                        className="text-violet-300"
+                    />
+
+                </div>
+
+                <div className="overflow-hidden">
+
+                    <p className="truncate text-sm font-semibold text-white">
+
+                        {data.label}
+
+                    </p>
+
+                    <p className="truncate text-xs text-zinc-400">
+
+                        {data.type || "Repository Symbol"}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <Handle
+                type="source"
+                position={Position.Bottom}
+            />
+
+        </div>
+    );
+}
 
 const dagreGraph = new dagre.graphlib.Graph();
 
@@ -105,14 +153,22 @@ export default function CodeGraph({
 
 }:Props){
 
-    if(!trace) return null;
+const [selectedNode, setSelectedNode] =
+    useState<ReasoningTrace["graph_nodes"][number] | null>(null);
 
-    const [selectedNode, setSelectedNode] = useState<any>(null);
+        const nodeTypes = useMemo(
+            () => ({
+                custom: GraphNode,
+            }),
+            []
+        );
+
+        if (!trace) return null;
 
     const nodes: Node[] = trace.graph_nodes.map((node) => ({
 
         id: node.id,
-
+        type: "custom",
         data: {
 
             ...node,
@@ -170,11 +226,16 @@ export default function CodeGraph({
             <div className="h-[600px] rounded-xl overflow-hidden border border-zinc-800">
 
                 <ReactFlow
-
                     nodes={layout.nodes}
-
                     edges={layout.edges}
-
+                    nodeTypes={nodeTypes}
+                    proOptions={{ hideAttribution: true }}
+                    defaultEdgeOptions={{
+                        style: {
+                            stroke: "#7c3aed",
+                            strokeWidth: 2,
+                        },
+                    }}
                     fitView
 
                     onNodeClick={(_, node) => {
@@ -185,11 +246,15 @@ export default function CodeGraph({
 
                 >
 
-                    <MiniMap/>
+                    <MiniMap
+                        pannable
+                        zoomable
+                        className="bg-zinc-900"
+                    />
 
                     <Controls/>
 
-                    <Background/>
+                    <Background gap={24} size={1} color="#3f3f46" />
 
                 </ReactFlow>
 
@@ -200,7 +265,7 @@ export default function CodeGraph({
                         selectedNode && (
 
                         <div
-                        className="mt-6 rounded-xl border border-zinc-700 bg-zinc-900 p-5"
+                        className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/70 backdrop-blur-md p-6"
                         >
 
                         <h3 className="text-xl font-bold">
@@ -211,7 +276,7 @@ export default function CodeGraph({
 
                         <div className="mt-4 space-y-2 text-sm">
 
-                        <div>
+                        <div className="mt-1 inline-flex rounded-full border border-violet-500/20 bg-violet-500/10 px-2 py-1 text-xs text-violet-300">
 
                         <b>Type:</b> {selectedNode.type}
 
@@ -219,7 +284,7 @@ export default function CodeGraph({
 
                         <div>
 
-                        <b>File:</b> {selectedNode.file_path}
+                        <b>File:</b> {selectedNode.file_path || "Unknown"}
 
                         </div>
 
@@ -229,11 +294,9 @@ export default function CodeGraph({
 
                         {" "}
 
-                        {selectedNode.start_line}
-
-                        -
-
-                        {selectedNode.end_line}
+                        {selectedNode.start_line ?? "-"}
+                        {" - "}
+                        {selectedNode.end_line ?? "-"}
 
                         </div>
 
@@ -244,9 +307,7 @@ export default function CodeGraph({
                         </div>
 
                         <p className="text-zinc-400">
-
-                        {selectedNode.description}
-
+                            {selectedNode.description || "No description available."}
                         </p>
 
                         </div>

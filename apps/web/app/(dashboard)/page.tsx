@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 
-import Sidebar from "./components/Sidebar";
-import ChatWindow from "./components/ChatWindow";
+import Sidebar from "../components/Sidebar";
+import ChatWindow from "../components/ChatWindow";
+import type { RepositoryStatusResponse } from "../types/repository";
 
 export default function Home() {
 
@@ -11,6 +12,8 @@ export default function Home() {
   const [selectedRepository, setSelectedRepository] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [repositoryRefreshKey, setRepositoryRefreshKey] = useState(0);
+
+const [repositoryStatus, setRepositoryStatus] = useState<RepositoryStatusResponse | null>(null);
 
   return (
     <main className="flex h-screen">
@@ -29,11 +32,15 @@ export default function Home() {
         triggerRepositoryRefresh={() =>
             setRepositoryRefreshKey(prev => prev + 1)
         }
+
+        repositoryStatus={repositoryStatus}
+        setRepositoryStatus={setRepositoryStatus}
       />
 
       <ChatWindow
         sessionId={selectedSession}
         repositoryId={selectedRepository}
+        repositoryStatus={repositoryStatus}
       />
 
     </main>

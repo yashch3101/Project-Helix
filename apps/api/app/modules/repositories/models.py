@@ -3,6 +3,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_model import BaseModel
 from app.modules.projects.models import Project
+from datetime import datetime
+from sqlalchemy import DateTime
 
 
 class Repository(BaseModel):
@@ -23,14 +25,35 @@ class Repository(BaseModel):
 
     status: Mapped[str] = mapped_column(
         String(50),
-        default="pending",
+        default="PENDING",
+        index=True,
+    )
+
+    progress: Mapped[int] = mapped_column(
+        default=0,
+    )
+
+    current_stage: Mapped[str] = mapped_column(
+        String(255),
+        default="Waiting...",
+    )
+
+    indexed_at: Mapped[datetime | None] = mapped_column(
+        DateTime,
+        nullable=True,
+    )
+
+    error_message: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
     )
 
     project_id = mapped_column(
         ForeignKey(
             "projects.id",
             ondelete="CASCADE",
-        )
+        ),
+        index=True,
     )
 
     files = relationship(

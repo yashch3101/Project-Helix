@@ -48,6 +48,11 @@ export interface ReasoningTrace {
     graph_nodes:{
         id:string;
         label:string;
+        type: string;
+        file_path: string;
+        start_line: number | null;
+        end_line: number | null;
+        description: string;
     }[];
 
     graph_connections:{
@@ -59,8 +64,10 @@ export interface ReasoningTrace {
 }
 
 export interface Evidence {
-    title: string;
-    description: string;
+    type: string;
+    symbol: string;
+    chunk_type: string;
+    lines: string;
 }
 
 export interface Impact {

@@ -23,6 +23,9 @@ class IndexingService:
             chunks
         )
 
+        if bm25 is None:
+            return
+
         BM25Cache.set(
 
             repository_id,

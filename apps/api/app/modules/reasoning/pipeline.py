@@ -24,61 +24,83 @@ from app.modules.impact.service import ImpactService
 
 from app.modules.context.service import ContextService
 
+from app.modules.reasoning.intent import IntentClassifier
+
+from app.modules.query_rewriter.service import (
+    QueryRewriterService,
+)
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
+
 
 class ReasoningPipeline:
 
     @staticmethod
     async def run(
-        db,
-        repository_id,
-        query,
-        top_k=10,
+        db: AsyncSession,
+        repository_id: UUID,
+        query: str,
+        top_k: int = 5,
     ):
+
+        plan = IntentClassifier.classify(query)
+
+        rewrite = QueryRewriterService.rewrite(query)
 
         # Step 1
         retrieval = await RetrievalService.search(
             db=db,
             repository_id=repository_id,
-            query=query,
-            top_k=top_k,
+            query=rewrite.rewritten,
+            top_k=min(
+                top_k,
+                plan.retrieval_limit,
+            )
         )
 
         # Step 2
-        graph = await GraphRetrievalService.expand(
-            db=db,
-            repository_id=repository_id,
-            symbols=[
-                item["chunk_name"]
-                if isinstance(item, dict)
-                else item.chunk_name
-                for item in retrieval
-            ],
-        )
+        graph = []
+
+        if plan.expand_graph:
+
+            graph = await GraphRetrievalService.expand(
+                db=db,
+                repository_id=repository_id,
+                symbols=[
+                    item["chunk_name"]
+                    if isinstance(item, dict)
+                    else item.chunk_name
+                    for item in retrieval
+                ],
+            )
 
         # Step 3
-        dependency = await DependencyExpansionService.expand(
-            db=db,
-            repository_id=repository_id,
-            retrieval_results=retrieval,
-        )
+        dependency = []
+
+        if plan.expand_dependencies:
+
+            dependency = await DependencyExpansionService.expand(
+                db=db,
+                repository_id=repository_id,
+                retrieval_results=retrieval,
+            )
 
         # Step 4
-        context = await ContextService.build(
-            db=db,
-            repository_id=repository_id,
-            query=query,
-            top_k=10,
-        )
+        context = []
 
-        context = ContextCompressionService.compress(
-            context
-        )
+        if plan.use_context:
 
-        print("=" * 80)
-        print("COMPRESSED CONTEXT:", len(context))
-        print("=" * 80)
+            context = await ContextService.build(
+                db=db,
+                retrieval_results=retrieval,
+            )
 
-        trace = TraceBuilder.build({
+            context = ContextCompressionService.compress(
+                context
+            )
+
+        reasoning_data = {
 
             "retrieval": retrieval,
 
@@ -88,49 +110,42 @@ class ReasoningPipeline:
 
             "context": context,
 
-        })
+        }
 
-        evidence = EvidenceBuilder.build({
+        trace = TraceBuilder.build(
+            reasoning_data
+        )
 
-            "retrieval": retrieval,
+        evidence = EvidenceBuilder.build(
+            reasoning_data
+        )
 
-            "graph": graph,
-
-            "dependency": dependency,
-
-            "context": context,
-
-        })
-
-        impact = ImpactAnalyzer.analyze({
-
-            "graph": graph,
-
-        })
+        impact = ImpactAnalyzer.analyze(
+            {
+                "graph": graph,
+            }
+        )
 
         impact_analysis = []
 
-        processed = set()
+        if plan.use_impact:
 
-        for edge in graph:
+            processed = set()
 
-            if edge.source_symbol in processed:
-                continue
+            for edge in graph:
 
-            processed.add(edge.source_symbol)
+                if edge.source_symbol in processed:
+                    continue
 
-            result = await ImpactService.analyze(
-                db=db,
-                repository_id=repository_id,
-                symbol=edge.source_symbol,
-            )
+                processed.add(edge.source_symbol)
 
-            impact_analysis.append(result)
+                result = await ImpactService.analyze(
+                    db=db,
+                    repository_id=repository_id,
+                    symbol=edge.source_symbol,
+                )
 
-            print("=" * 80)
-            print("IMPACT ANALYSIS")
-            print(impact_analysis)
-            print("=" * 80)
+                impact_analysis.append(result)
 
         return {
 

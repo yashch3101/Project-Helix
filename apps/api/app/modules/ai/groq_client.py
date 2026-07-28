@@ -28,6 +28,8 @@ class GroqClient:
                 }
             ],
             "temperature": 0,
+
+            "max_completion_tokens": 4096,
         }
 
         # Force JSON output whenever required
@@ -35,6 +37,7 @@ class GroqClient:
             kwargs["response_format"] = {
                 "type": "json_object"
             }
+            kwargs["temperature"] = 0
 
         response = await GroqClient.client.chat.completions.create(
             **kwargs

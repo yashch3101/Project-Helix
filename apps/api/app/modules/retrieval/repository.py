@@ -4,7 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.embeddings.models import CodeEmbedding
 from app.modules.code_chunks.models import CodeChunk
 from app.modules.repository_index.models import RepositoryFile
+import logging
 
+logger = logging.getLogger(__name__)
 
 class RetrievalRepository:
 
@@ -42,20 +44,25 @@ class RetrievalRepository:
         top_k: int = 10,
     ):
 
-        print("=" * 80)
-        print("REPOSITORY ID:", repository_id)
-        print("TYPE:", type(repository_id))
-        print("=" * 80)
-
         sql = text("""
         SELECT
 
             c.id,
+
             c.repository_file_id,
+
+            f.file_name,
+
+            f.relative_path,
+
             c.chunk_name,
+
             c.chunk_type,
+
             c.start_line,
+
             c.end_line,
+
             c.content,
 
             1 - (e.embedding <=> CAST(:embedding AS vector)) AS score
@@ -81,10 +88,11 @@ class RetrievalRepository:
             "top_k": top_k,
         }
 
-        print("=" * 80)
-        print("SQL PARAMS")
-        print(params)
-        print("=" * 80)
+        logger.debug(
+            "Semantic search repository=%s top_k=%d",
+            repository_id,
+            top_k,
+        )
 
         result = await db.execute(
             sql,

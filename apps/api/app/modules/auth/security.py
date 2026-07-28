@@ -1,13 +1,10 @@
 from datetime import datetime, timedelta, timezone
+from app.core.config import settings
 
 import jwt
 from pwdlib import PasswordHash
 
 password_hash = PasswordHash.recommended()
-
-SECRET_KEY = "CHANGE_THIS_LATER"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 def hash_password(password: str) -> str:
@@ -20,8 +17,15 @@ def verify_password(password: str, hashed: str) -> bool:
 
 def create_access_token(data: dict):
     payload = data.copy()
+
     expire = datetime.now(timezone.utc) + timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+        minutes=settings.access_token_expire_minutes
     )
+
     payload["exp"] = expire
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+    return jwt.encode(
+        payload,
+        settings.jwt_secret_key,
+        algorithm=settings.jwt_algorithm,
+    )

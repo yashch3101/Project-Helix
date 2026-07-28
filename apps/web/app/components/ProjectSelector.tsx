@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 import { getProjects } from "../services/project";
 
+import CreateProjectModal from "./CreateProjectModal";
+
 type Project = {
   id: string;
   name: string;
@@ -21,6 +23,7 @@ export default function ProjectSelector({
 }: Props) {
 
   const [projects, setProjects] = useState<Project[]>([]);
+  const [openModal, setOpenModal] = useState(false);
 
   useEffect(() => {
 
@@ -50,47 +53,113 @@ export default function ProjectSelector({
 
   }, []);
 
+  if (projects.length === 0) {
+
+    return (
+        <>
+            <div className="px-3 py-3">
+
+                <div className="rounded-xl border border-dashed border-zinc-700 p-4">
+
+                    <p className="text-sm font-semibold">
+                        No Projects Yet
+                    </p>
+
+                    <p className="mt-1 text-xs text-zinc-500">
+                        Create your first project to get started.
+                    </p>
+
+                    <button
+                        onClick={() => setOpenModal(true)}
+                        className="
+                            mt-4
+                            w-full
+                            rounded-lg
+                            bg-violet-600
+                            py-2
+                            text-sm
+                            font-medium
+                        "
+                    >
+                        + Create Project
+                    </button>
+
+                </div>
+
+            </div>
+
+            <CreateProjectModal
+                open={openModal}
+                onClose={() => setOpenModal(false)}
+                onCreated={async () => {
+
+                    const data = await getProjects();
+
+                    setProjects(data);
+
+                    if (data.length > 0) {
+
+                        onSelect(data[0].id);
+
+                    }
+
+                }}
+            />
+        </>
+    );
+
+}
+
   return (
+      <>
+          <div className="px-3 py-3">
 
-    <div className="px-3 py-3">
+              <select
+                  value={selectedProject ?? ""}
+                  onChange={(e) => onSelect(e.target.value)}
+                  className="
+                      w-full
+                      rounded-lg
+                      bg-zinc-800
+                      px-3
+                      py-2
+                      outline-none
+                  "
+              >
 
-      <select
+                  {projects.map((project) => (
 
-        value={selectedProject ?? ""}
+                      <option
+                          key={project.id}
+                          value={project.id}
+                      >
+                          {project.name}
+                      </option>
 
-        onChange={(e)=>onSelect(e.target.value)}
+                  ))}
 
-        className="
-          w-full
-          rounded-lg
-          bg-zinc-800
-          px-3
-          py-2
-          outline-none
-        "
+              </select>
 
-      >
+          </div>
 
-        {projects.map(project=>(
+          <CreateProjectModal
+              open={openModal}
+              onClose={() => setOpenModal(false)}
+              onCreated={async () => {
 
-          <option
+                  const data = await getProjects();
 
-            key={project.id}
+                  setProjects(data);
 
-            value={project.id}
+                  if (data.length > 0) {
 
-          >
+                      onSelect(data[0].id);
 
-            {project.name}
+                  }
 
-          </option>
-
-        ))}
-
-      </select>
-
-    </div>
-
+              }}
+          />
+      </>
   );
 
 }

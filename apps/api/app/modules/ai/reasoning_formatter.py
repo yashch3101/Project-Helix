@@ -11,18 +11,27 @@ class ReasoningFormatter:
 
         lines.append("# RETRIEVAL RESULTS\n")
 
-        for item in reasoning["retrieval"]:
+        MAX_RETRIEVAL = 2
+
+        for item in reasoning["retrieval"][:MAX_RETRIEVAL]:
+
+            content = item["content"]
+
+            MAX_CONTENT_CHARS = 500
+
+            if len(content) > MAX_CONTENT_CHARS:
+                content = content[:MAX_CONTENT_CHARS] + "\n..."
 
             lines.append(
                 f"""
-FILE: {item["chunk_name"]}
-TYPE: {item["chunk_type"]}
-LINES: {item["start_line"]}-{item["end_line"]}
+        FILE: {item["chunk_name"]}
+        TYPE: {item["chunk_type"]}
+        LINES: {item["start_line"]}-{item["end_line"]}
 
-{item["content"]}
+        {content}
 
-----------------------------------------
-"""
+        ----------------------------------------
+        """
             )
 
         # ==========================================================
@@ -31,7 +40,9 @@ LINES: {item["start_line"]}-{item["end_line"]}
 
         lines.append("\n# GRAPH RELATIONSHIPS\n")
 
-        for edge in reasoning["graph"]:
+        MAX_GRAPH = 8
+
+        for edge in reasoning["graph"][:MAX_GRAPH]:
 
             lines.append(
                 f"{edge.source_symbol}"
@@ -56,7 +67,9 @@ LINES: {item["start_line"]}-{item["end_line"]}
 
         print("=" * 80)
 
-        for dep in reasoning["dependency"]:
+        MAX_DEPENDENCIES = 8
+
+        for dep in reasoning["dependency"][:MAX_DEPENDENCIES]:
 
             lines.append(
 
@@ -64,20 +77,10 @@ LINES: {item["start_line"]}-{item["end_line"]}
 
             )
 
-        # ==========================================================
-        # CONTEXT
-        # ==========================================================
+        formatted = "\n".join(lines)
 
-        lines.append("\n# EXPANDED CONTEXT\n")
+        print("=" * 80)
+        print("FORMATTED CONTEXT CHARS:", len(formatted))
+        print("=" * 80)
 
-        for chunk in reasoning["context"]:
-
-            if isinstance(chunk, dict):
-
-                lines.append(chunk["content"])
-
-            else:
-
-                lines.append(chunk.content)
-
-        return "\n".join(lines)
+        return formatted

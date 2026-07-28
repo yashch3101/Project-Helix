@@ -54,9 +54,16 @@ class ParserService:
 
         for file in files:
 
+            print("=" * 80)
+            print("FILE:", file.file_name)
+            print("EXTENSION:", file.extension)
+            print("=" * 80)
+
             parser = ParserFactory.get_parser(
                 file.extension
             )
+
+            print("PARSER:", parser)
 
             if parser is None:
                 continue
@@ -117,11 +124,18 @@ class ParserService:
                     symbol.line_end,
                 )
 
-                await SymbolDocumentationService.get_or_generate(
-                    db=db,
-                    symbol=symbol,
-                    source_code=source,
-                )
+                if symbol.symbol_type in [
+                    "class",
+                    "function",
+                    "component",
+                    "hook",
+                ]:
+
+                    await SymbolDocumentationService.get_or_generate(
+                        db=db,
+                        symbol=symbol,
+                        source_code=source,
+                    )
 
                 parsed.append(symbol)
 

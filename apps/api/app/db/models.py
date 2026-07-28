@@ -9,6 +9,8 @@ from app.modules.code_chunks.models import CodeChunk
 from app.modules.embeddings.models import CodeEmbedding
 from app.modules.chat.models import ChatSession, ChatMessage
 from app.modules.symbol_docs.models import SymbolDocumentation
+from app.modules.knowledge_graph.models import SymbolRelationship
+from app.modules.repository_summary.models import RepositorySummary
 
 __all__ = [
     "User",
@@ -23,4 +25,6 @@ __all__ = [
     "ChatSession",
     "ChatMessage",
     "SymbolDocumentation",
+    "SymbolRelationship",
+    "RepositorySummary",
 ]

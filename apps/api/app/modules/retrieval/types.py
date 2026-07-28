@@ -19,3 +19,7 @@ class RetrievalResult:
     end_line: int
 
     content: str
+
+    file_name: str
+
+    relative_path: str

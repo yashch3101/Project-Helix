@@ -1,19 +1,27 @@
-const API = process.env.NEXT_PUBLIC_API_URL;
+import { api } from "@/app/lib/api";
+
+type Project = {
+    id: string;
+    name: string;
+    description?: string;
+};
 
 export async function getProjects() {
+    return api<Project[]>("/projects");
+}
 
-    const res = await fetch(
-
-        `${API}/projects`
-
-    );
-
-    if (!res.ok) {
-
-        throw new Error("Failed to load projects");
-
-    }
-
-    return res.json();
-
+export async function createProject(
+    name: string,
+    description: string
+) {
+    return api<Project>("/projects", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            name,
+            description,
+        }),
+    });
 }

@@ -8,16 +8,19 @@ class BM25Index:
     @staticmethod
     def build(chunks):
 
-        corpus = [
+        if not chunks:
+            return None
 
-            Tokenizer.tokenize(
+        corpus = []
 
-                chunk.content
+        for chunk in chunks:
 
-            )
+            tokens = Tokenizer.tokenize(chunk.content)
 
-            for chunk in chunks
+            if tokens:
+                corpus.append(tokens)
 
-        ]
+        if not corpus:
+            return None
 
         return BM25Okapi(corpus)

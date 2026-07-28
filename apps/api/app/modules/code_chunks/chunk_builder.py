@@ -18,14 +18,38 @@ class ChunkBuilder:
 
         chunks = []
 
+        ALLOWED_SYMBOLS = {
+            "class",
+            "function",
+            "method",
+            "arrow_function",
+            "component",
+            "hook",
+        }
+
         for symbol in symbols:
+
+            if symbol.symbol_type not in ALLOWED_SYMBOLS:
+                continue
 
             start = symbol.line_start
             end = symbol.line_end
 
+            if start <= 0:
+                continue
+
+            if end < start:
+                continue
+
+            if end > len(lines):
+                end = len(lines)
+
             content = "\n".join(
                 lines[start - 1:end]
             )
+
+            if not content.strip():
+                continue
 
             chunks.append(
                 {
@@ -38,5 +62,10 @@ class ChunkBuilder:
                     "symbol_id": symbol.id,
                 }
             )
+
+        print("=" * 80)
+        print(file_path)
+        print("Chunks:", len(chunks))
+        print("=" * 80)
 
         return chunks

@@ -25,3 +25,14 @@ class AuthRepository:
         await db.commit()
         await db.refresh(user)
         return user
+
+    @staticmethod
+    async def get_by_id(
+        db: AsyncSession,
+        user_id: str,
+    ):
+        result = await db.execute(
+            select(User).where(User.id == user_id)
+        )
+
+        return result.scalar_one_or_none()

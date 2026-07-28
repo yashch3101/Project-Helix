@@ -16,6 +16,17 @@ SUPPORTED_EXTENSIONS = {
     ".jsx",
 }
 
+IGNORE_DIRS = {
+    ".git",
+    "node_modules",
+    ".next",
+    "dist",
+    "build",
+    "coverage",
+    "__pycache__",
+    ".venv",
+    "venv",
+}
 
 class FileScanner:
 
@@ -27,6 +38,9 @@ class FileScanner:
         root = Path(repository_path)
 
         for path in root.rglob("*"):
+
+            if any(part in IGNORE_DIRS for part in path.parts):
+                continue
 
             if not path.is_file():
                 continue

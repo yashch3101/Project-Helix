@@ -13,6 +13,10 @@ from app.modules.parser.file_scanner import FileScanner
 from app.modules.repository_index.service import RepositoryIndexService
 from app.db.session import AsyncSessionLocal
 from app.modules.graph.service import GraphService
+from app.modules.knowledge_graph.service import (
+    KnowledgeGraphService,
+)
+from app.modules.repository_summary.service import RepositorySummaryService
 
 
 class RepositoryService:
@@ -23,6 +27,12 @@ class RepositoryService:
         payload,
         background_tasks,
     ):
+
+        if "github.com" not in str(payload.github_url):
+
+            raise ValueError(
+                "Invalid GitHub repository URL."
+            )
 
         repository_name = get_repository_name(
             str(payload.github_url),
@@ -37,16 +47,32 @@ class RepositoryService:
             status="pending",
         )
 
+        existing = await RepositoryRepository.get_by_project(
+            db=db,
+            project_id=payload.project_id,
+        )
+
+        for repo in existing:
+
+            if repo.github_url == str(payload.github_url):
+
+                raise ValueError(
+                    "Repository already imported."
+                )
+
         # Save repository first
         repository = await RepositoryRepository.create(
             db,
             repository,
         )
 
+        print("ADDING BACKGROUND TASK")
+
         background_tasks.add_task(
             RepositoryService.process_repository,
             repository.id,
         )
+        print("BACKGROUND TASK ADDED")
 
         return repository
 
@@ -59,6 +85,22 @@ class RepositoryService:
             db=db,
             project_id=project_id
         )
+
+    @staticmethod
+    async def get_status(
+        db,
+        repository_id,
+    ):
+
+        repository = await RepositoryRepository.get_by_id(
+            db=db,
+            repository_id=repository_id,
+        )
+
+        if repository is None:
+            raise Exception("Repository not found")
+
+        return repository
 
     @staticmethod
     async def sync(
@@ -74,10 +116,12 @@ class RepositoryService:
         if repository is None:
             raise Exception("Repository not found")
 
-        await RepositoryRepository.update_status(
+        await RepositoryRepository.update_progress(
             db=db,
             repository=repository,
-            status="syncing",
+            status="CLONING",
+            progress=5,
+            current_stage="Cloning repository...",
         )
 
         # Pull latest changes
@@ -89,6 +133,17 @@ class RepositoryService:
         scanned_files = FileScanner.scan(
             repository.local_path,
         )
+
+        print("=" * 80)
+        print("SCANNED FILES")
+
+        for f in scanned_files:
+            print(
+                f["name"],
+                f["extension"],
+            )
+
+        print("=" * 80)
 
         # Detect changes
         added, modified, deleted = (
@@ -131,10 +186,12 @@ class RepositoryService:
             scanned_files=modified_files,
         )
 
-        await RepositoryRepository.update_status(
+        await RepositoryRepository.update_progress(
             db=db,
             repository=repository,
-            status="ready",
+            status="READY",
+            progress=100,
+            current_stage="Repository ready.",
         )
 
         return repository
@@ -144,6 +201,11 @@ class RepositoryService:
         repository_id,
     ):
         try:
+
+            print("=" * 50)
+            print("PROCESS REPOSITORY STARTED")
+            print(repository_id)
+            print("=" * 50)
 
             async with AsyncSessionLocal() as db:
 
@@ -159,10 +221,12 @@ class RepositoryService:
                 if repository is None:
                     return
 
-                repository = await RepositoryRepository.update_status(
+                repository = await RepositoryRepository.update_progress(
                     db=db,
                     repository=repository,
-                    status="cloning",
+                    status="CLONING",
+                    progress=5,
+                    current_stage="Cloning repository...",
                 )
 
                 print("STATUS UPDATED")
@@ -171,6 +235,7 @@ class RepositoryService:
                     repository.github_url,
                     repository.name,
                 )
+                print("✅ STEP 1 : Clone Completed")
 
                 print(local_path)
 
@@ -182,16 +247,12 @@ class RepositoryService:
 
                 print("LOCAL PATH SAVED")
 
-                await RepositoryRepository.update_status(
+                await RepositoryRepository.update_progress(
                     db=db,
                     repository=repository,
-                    status="scanning",
-                )
-
-                await RepositoryRepository.update_status(
-                    db=db,
-                    repository=repository,
-                    status="embedding",
+                    status="PARSING",
+                    progress=20,
+                    current_stage="Scanning repository files...",
                 )
 
                 scanned_files = FileScanner.scan(
@@ -203,14 +264,29 @@ class RepositoryService:
                     repository=repository,
                     scanned_files=scanned_files,
                 )
+                print("✅ STEP 2 : Repository Indexed")
 
                 print("=" * 80)
                 print("REPOSITORY FILES INDEXED")
                 print("=" * 80)
 
+                print("🚀 STEP 3 : Starting Parser")
                 await ParserService.parse_repository(
                     db=db,
                     repository_id=repository.id,
+                )
+                print("✅ STEP 4 : Parser Finished")
+
+                await RepositoryRepository.update_progress(
+                    db=db,
+                    repository=repository,
+                    status="GRAPH",
+                    progress=40,
+                    current_stage="Building knowledge graph...",
+                )
+
+                await KnowledgeGraphService.build(
+                    db=db,
                 )
 
                 print("=" * 80)
@@ -226,14 +302,51 @@ class RepositoryService:
                 print("GRAPH READY")
                 print("=" * 80)
 
+                # ===============================
+                # Repository Knowledge Card
+                # ===============================
+
+                await RepositorySummaryService.test(
+                    db=db,
+                    repository_id=repository.id,
+                )
+
+                await RepositoryRepository.update_progress(
+                    db=db,
+                    repository=repository,
+                    status="CHUNKING",
+                    progress=55,
+                    current_stage="Creating semantic chunks...",
+                )
+
+                print("=" * 80)
+                print("SUMMARY GENERATED")
+                print("=" * 80)
+
                 await CodeChunkService.build_chunks(
                     db=db,
                     repository_id=repository.id,
                 )
 
+                await RepositoryRepository.update_progress(
+                    db=db,
+                    repository=repository,
+                    status="GRAPH",
+                    progress=65,
+                    current_stage="Building knowledge graph...",
+                )
+
                 print("=" * 80)
                 print("PARSER COMPLETED")
                 print("=" * 80)
+
+                await RepositoryRepository.update_progress(
+                    db=db,
+                    repository=repository,
+                    status="EMBEDDING",
+                    progress=80,
+                    current_stage="Generating embeddings...",
+                )
 
                 await EmbeddingService.generate(
                     db=db,
@@ -242,6 +355,14 @@ class RepositoryService:
                 print("=" * 80)
                 print("EMBEDDINGS GENERATED")
                 print("=" * 80)
+
+                await RepositoryRepository.update_progress(
+                    db=db,
+                    repository=repository,
+                    status="INDEXING",
+                    progress=95,
+                    current_stage="Building hybrid search index...",
+                )
 
                 await IndexingService.rebuild(
                     db=db,
@@ -252,10 +373,12 @@ class RepositoryService:
                 print("BM25 REBUILT")
                 print("=" * 80)
 
-                await RepositoryRepository.update_status(
+                await RepositoryRepository.update_progress(
                     db=db,
                     repository=repository,
-                    status="ready",
+                    status="READY",
+                    progress=100,
+                    current_stage="Repository ready.",
                 )
 
                 print("=" * 80)
@@ -263,7 +386,35 @@ class RepositoryService:
                 print("=" * 80)
 
         except Exception as e:
+
             print("=" * 80)
             print("BACKGROUND ERROR")
             traceback.print_exc()
             print("=" * 80)
+
+            try:
+
+                async with AsyncSessionLocal() as db:
+
+                    repository = await RepositoryRepository.get_by_id(
+                        db=db,
+                        repository_id=repository_id,
+                    )
+
+                    if repository:
+
+                        await RepositoryRepository.update_progress(
+                            db=db,
+                            repository=repository,
+                            status="FAILED",
+                            progress=100,
+                            current_stage="Repository processing failed.",
+                        )
+
+                        repository.error_message = str(e)
+
+                        await db.commit()
+
+            except Exception:
+
+                traceback.print_exc()

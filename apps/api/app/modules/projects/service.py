@@ -22,7 +22,11 @@ class ProjectService:
         )
 
     @staticmethod
-    async def get_all(
+    async def get_by_owner(
         db,
+        owner_id,
     ):
-        return await ProjectRepository.get_all(db)
+        return await ProjectRepository.get_by_owner(
+            db,
+            owner_id,
+        )

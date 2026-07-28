@@ -1,5 +1,11 @@
 "use client";
 
+import {
+    FileText,
+    FileCode2,
+    Hash,
+} from "lucide-react";
+
 import { Evidence } from "../types/chat";
 
 type Props = {
@@ -15,36 +21,97 @@ export default function EvidencePanel({
 
     return (
 
-        <div className="mt-6">
+        <div className="mt-8">
 
-            <h3 className="font-semibold mb-3">
+            <div className="flex items-center gap-2 mb-5">
 
-                📄 Retrieved Evidence
+                <FileText className="h-5 w-5 text-violet-400" />
 
-            </h3>
+                <div>
 
-            <div className="space-y-2">
+                    <h3 className="text-xl font-semibold">
+
+                        Retrieved Evidence
+
+                    </h3>
+
+                    <p className="text-sm text-zinc-500">
+
+                        Source code chunks used to generate this answer
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div className="space-y-4">
 
                 {evidence.map((item, index)=>(
 
                     <div
                         key={index}
-                        className="rounded-lg bg-zinc-900 p-3"
+                        className="
+                            rounded-2xl
+                            border
+                            border-zinc-800
+                            bg-zinc-900/70
+                            backdrop-blur
+                            p-5
+                            transition-all
+                            duration-300
+                            hover:border-violet-500/40
+                            hover:shadow-lg
+                            hover:shadow-violet-500/10
+                        "
                     >
 
-                        <div className="font-medium">
+                        <div className="flex items-start justify-between">
 
-                            {item.symbol}
+                            <div>
+
+                                <div className="flex items-center gap-2">
+
+                                    <FileCode2 className="h-4 w-4 text-violet-400" />
+
+                                    <h4 className="font-semibold text-white">
+
+                                        {item.symbol}
+
+                                    </h4>
+
+                                </div>
+
+                                <p className="mt-2 text-sm text-zinc-400">
+
+                                    {item.chunk_type}
+
+                                </p>
+
+                            </div>
+
+                            <span
+                                className="
+                                    rounded-full
+                                    border
+                                    border-violet-500/30
+                                    bg-violet-500/10
+                                    px-3
+                                    py-1
+                                    text-xs
+                                    text-violet-300
+                                "
+                            >
+
+                                Evidence
+
+                            </span>
 
                         </div>
 
-                        <div className="text-sm text-gray-400">
+                        <div className="mt-4 flex items-center gap-2 text-sm text-zinc-500">
 
-                            {item.chunk_type}
-
-                        </div>
-
-                        <div className="text-xs text-gray-500">
+                            <Hash className="h-4 w-4" />
 
                             Lines {item.lines}
 

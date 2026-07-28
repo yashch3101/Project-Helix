@@ -1,22 +1,31 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
 from app.modules.retrieval.vector_search import VectorSearch
 from app.modules.retrieval.bm25_search import BM25Search
 from app.modules.retrieval.rrf import ReciprocalRankFusion
 from app.modules.retrieval.config import (
     VECTOR_TOP_K,
     BM25_TOP_K,
-    RERANK_TOP_K
 )
 from app.modules.retrieval.reranker.service import RerankerService
+import re
 
+TOKEN_REGEX = re.compile(
+    r"[A-Za-z_][A-Za-z0-9_]*"
+)
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 class HybridSearch:
 
     @staticmethod
     async def search(
-        db,
-        repository_id,
-        query,
-        top_k=10,
+        db: AsyncSession,
+        repository_id: UUID,
+        query: str,
+        top_k: int = 10,
     ):
 
         vector = await VectorSearch.search(
@@ -31,7 +40,7 @@ class HybridSearch:
 
         )
 
-        print("VECTOR OBJECTS:", len(vector))
+        logger.debug("VECTOR OBJECTS: %s", len(vector))
 
         bm25 = await BM25Search.search(
 
@@ -44,7 +53,8 @@ class HybridSearch:
             top_k=BM25_TOP_K
 
         )
-        print("BM25 OBJECTS:", len(bm25))
+
+        logger.debug("BM25 OBJECTS: %s", len(bm25))
 
         vector = [
 
@@ -55,6 +65,10 @@ class HybridSearch:
                 "chunk_id": x.chunk_id,
 
                 "repository_file_id": x.repository_file_id,
+
+                "file_name": x.file_name,
+
+                "relative_path": x.relative_path,
 
                 "chunk_name": x.chunk_name,
 
@@ -72,7 +86,7 @@ class HybridSearch:
 
         ]
         
-        print("VECTOR AFTER CONVERT:", len(vector))
+        logger.debug("VECTOR AFTER CONVERT: %s", len(vector))
 
         merged = ReciprocalRankFusion.fuse(
 
@@ -82,33 +96,41 @@ class HybridSearch:
 
         )
 
-        reranked = RerankerService.rerank(
+        # ----------------------------------------
+        # Exact Symbol Boost
+        # ----------------------------------------
 
-            query,
-
-            merged,
-
+        tokens = TOKEN_REGEX.findall(
+            query
         )
 
-        print("=" * 80)
-        print("RERANKED SAMPLE")
-        print(reranked[0])
-        print("HAS repository_file_id:", "repository_file_id" in reranked[0])
-        print("=" * 80)
+        token_set = {
+            t.lower()
+            for t in tokens
+        }
 
-        print("=" * 80)
-        print("VECTOR RESULTS")
-        for item in vector:
-            print(item["chunk_name"], item["score"])
+        for item in merged:
 
-        print("=" * 80)
-        print("BM25 RESULTS")
-        for item in bm25:
-            print(item["chunk_name"])
+            chunk_name = item["chunk_name"].lower()
 
-        print("=" * 80)
-        print("FINAL RESULTS")
-        for item in reranked:
-            print(item["chunk_name"])
+            if chunk_name in token_set:
 
-        return reranked[:RERANK_TOP_K]
+                item["score"] += 100
+
+        reranked = RerankerService.rerank(
+            query,
+            merged,
+        )
+
+        logger.debug("FINAL RERANKED RESULTS")
+
+        for item in reranked[:10]:
+
+            logger.debug(
+                "%s | score=%s | rerank=%s",
+                item["chunk_name"],
+                item.get("score"),
+                item.get("rerank_score"),
+            )
+
+        return reranked[:top_k]

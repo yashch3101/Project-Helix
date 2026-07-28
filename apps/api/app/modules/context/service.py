@@ -1,5 +1,4 @@
 from app.modules.context.repository import ContextRepository
-from app.modules.retrieval.service import RetrievalService
 
 
 class ContextService:
@@ -7,17 +6,16 @@ class ContextService:
     @staticmethod
     async def build(
         db,
-        repository_id,
-        query,
-        top_k=5,
+        retrieval_results,
     ):
 
-        results = await RetrievalService.search(
-            db=db,
-            repository_id=repository_id,
-            query=query,
-            top_k=top_k,
-        )
+        results = retrieval_results
+
+        if not results:
+            print("=" * 80)
+            print("No retrieval results found.")
+            print("=" * 80)
+            return []
 
         print("=" * 80)
         print("CONTEXT INPUT SAMPLE")
@@ -31,7 +29,7 @@ class ContextService:
 
         print("=" * 80)
         print("RESULT TYPE:", type(results))
-        print("FIRST RESULT:", results[0])
+        print("TOTAL RESULTS:", len(results))
         print("FIRST RESULT TYPE:", type(results[0]))
         print("=" * 80)
 

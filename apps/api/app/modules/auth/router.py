@@ -55,7 +55,10 @@ async def login(
             detail=str(e),
         )
 
-@router.get("/me")
+@router.get(
+    "/me",
+    response_model=UserResponse,
+)
 async def me(
     current_user=Depends(get_current_user),
 ):

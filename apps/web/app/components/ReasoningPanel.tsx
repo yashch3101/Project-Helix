@@ -1,10 +1,10 @@
 "use client";
 
-import { Trace } from "../types/chat";
+import { ReasoningTrace } from "../types/chat";
 
 type Props = {
 
-    trace?: Trace;
+    trace?: ReasoningTrace;
 
 };
 
@@ -18,15 +18,41 @@ export default function ReasoningPanel({
 
     return (
 
-        <div className="mt-5 rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="mt-6 rounded-2xl border border-zinc-700 bg-zinc-900/80 backdrop-blur-md shadow-xl p-6">
 
-            <h3 className="font-semibold text-white mb-4">
+            <div className="mb-6 flex items-center justify-between">
 
-                🧠 Reasoning
+                <div>
 
-            </h3>
+                    <h3 className="text-xl font-semibold text-white">
+                        🧠 AI Reasoning
+                    </h3>
 
-            <div className="grid grid-cols-2 gap-4">
+                    <p className="mt-1 text-sm text-zinc-400">
+                        Internal reasoning pipeline execution
+                    </p>
+
+                </div>
+
+                <div
+                    className="
+                        rounded-full
+                        border
+                        border-violet-500/30
+                        bg-violet-500/10
+                        px-3
+                        py-1
+                        text-xs
+                        font-medium
+                        text-violet-300
+                    "
+                >
+                    Completed
+                </div>
+
+            </div>
+
+            <div className="grid grid-cols-2 gap-5">
 
                 <Stat
                     label="Retrieval"
@@ -72,17 +98,28 @@ function Stat({
 
     return (
 
-        <div className="rounded-lg bg-zinc-800 p-3">
+        <div className="rounded-xl border border-zinc-700 bg-zinc-800/60 p-5 transition duration-300 hover:border-violet-500/40 hover:bg-zinc-800">
 
-            <div className="text-sm text-zinc-400">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">
 
                 {label}
 
             </div>
 
-            <div className="text-2xl font-bold mt-1">
+            <div className="mt-3 text-4xl font-bold text-white">
 
                 {value}
+
+            </div>
+
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-700">
+
+                <div
+                    className="h-full rounded-full bg-violet-500"
+                    style={{
+                        width: `${Math.min(value * 10, 100)}%`,
+                    }}
+                />
 
             </div>
 

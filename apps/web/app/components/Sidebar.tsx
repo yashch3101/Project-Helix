@@ -1,23 +1,36 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Plus, Search, FolderGit2, MessageSquare, User } from "lucide-react";
 import { getSessions, createSession, deleteChat, renameChat } from "../services/chat";
 import { ChatSession } from "../types/chat";
 import RepositorySelector from "./RepositorySelector";
 import ProjectSelector from "./ProjectSelector";
 import ImportRepositoryModal from "./ImportRepositoryModal";
-import { importRepository } from "../services/repository";
+import {
+    importRepository,
+    getRepositoryStatus,
+} from "../services/repository";
+import { LogOut } from "lucide-react";
+import { useAuth } from "@/app/providers/AuthProvider";
+import RepositoryProcessingCard from "./RepositoryProcessingCard";
+import { toast } from "sonner";
+import RepositoryStatsCard from "./RepositoryStatsCard";
+import type { RepositoryStatusResponse } from "../types/repository";
 
 type SidebarProps = {
   selectedSession: string | null;
-  setSelectedSession: (id: string) => void;
+  setSelectedSession: (id: string | null) => void;
   selectedRepository: string | null;
-  setSelectedRepository: (id:string) => void;
+  setSelectedRepository: (id: string | null) => void;
   selectedProject:string|null;
   setSelectedProject:(id:string)=>void;
   repositoryRefreshKey: number;
   triggerRepositoryRefresh: () => void;
+  repositoryStatus: RepositoryStatusResponse | null;
+  setRepositoryStatus: (
+      value: RepositoryStatusResponse | null
+  ) => void;
 };
 
 export default function Sidebar({
@@ -29,8 +42,11 @@ export default function Sidebar({
   setSelectedProject,
   repositoryRefreshKey,
   triggerRepositoryRefresh,
+  repositoryStatus,
+  setRepositoryStatus,
 }: SidebarProps) {
 
+  const { user, logout } = useAuth();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
@@ -126,6 +142,42 @@ useEffect(() => {
 
 }, []);
 
+useEffect(() => {
+
+    if (!selectedRepository) {
+        setRepositoryStatus(null);
+        return;
+    }
+
+    // Yahan TypeScript ko guarantee mil gayi
+    const repositoryId = selectedRepository;
+
+    async function loadStatus() {
+
+        try {
+
+            const data = await getRepositoryStatus(repositoryId);
+
+            setRepositoryStatus(data);
+
+        } catch (err) {
+
+            console.error(err);
+
+        }
+
+    }
+
+    loadStatus();
+
+    const interval = setInterval(loadStatus, 2000);
+
+    return () => {
+        clearInterval(interval);
+    };
+
+}, [selectedRepository]);
+
   async function handleNewChat() {
 
   try {
@@ -169,24 +221,38 @@ async function handleImportRepository(
 
   try {
 
-    await importRepository(
-      githubUrl,
-      selectedProject,
+    const repo = await importRepository(
+        githubUrl,
+        selectedProject
     );
 
     triggerRepositoryRefresh();
 
-    alert("Repository imported successfully.");
+    setSelectedRepository(repo.id);
+
+    toast.success(
+        "Repository imported successfully."
+    );
 
   } catch (err) {
 
-    console.error(err);
+      if (err instanceof Error) {
 
-    alert("Repository import failed.");
+          toast.error(
+              err.message
+          );
+
+      } else {
+
+          toast.error(
+              "Something went wrong."
+          );
+
+      }
+
+    }
 
   }
-
-}
 
 async function handleDeleteChat(
     sessionId: string
@@ -274,7 +340,7 @@ async function handleRename(
 
   <>
     
-    <aside className="w-80 bg-[#171717] border-r border-[#303030] flex flex-col">
+    <aside className="w-80 bg-zinc-950 border-r border-zinc-800 flex flex-col">
 
       {/* Top */}
       <div className="p-3 border-b border-[#303030]">
@@ -282,103 +348,148 @@ async function handleRename(
         <button
           onClick={handleNewChat}
           className="
-            w-full
-            rounded-xl
-            bg-[#2b2b2b]
-            hover:bg-[#373737]
-            transition
-            py-3
-            font-medium
+              flex
+              items-center
+              justify-center
+              gap-2
+              w-full
+              rounded-xl
+              bg-violet-600
+              hover:bg-violet-500
+              transition-all
+              py-3
+              font-medium
+              shadow-lg
+              shadow-violet-600/20
           "
-        >
-          + New Chat
-        </button>
+      >
+
+          <Plus size={18} />
+
+          New Chat
+
+      </button>
 
       </div>
 
       <ProjectSelector
-
-        selectedProject={selectedProject}
-
-        onSelect={(projectId)=>{
-
-        setSelectedProject(projectId);
-
-        setSelectedRepository(null);
-
-        setSelectedSession(null);
-
-        }}
-
+            selectedProject={selectedProject}
+            onSelect={(projectId) => {
+                setSelectedProject(projectId);
+                setSelectedRepository(null);
+                setSelectedSession(null);
+            }}
         />
 
-        <RepositorySelector
+        {selectedProject && (
+            <>
+                <RepositorySelector
+                    projectId={selectedProject}
+                    selectedRepository={selectedRepository}
+                    refreshKey={repositoryRefreshKey}
+                    onSelect={async (repoId) => {
 
-          projectId={selectedProject ?? ""}
+                      setSelectedRepository(repoId);
 
-          selectedRepository={selectedRepository}
+                      const data = await getSessions(repoId);
 
-          refreshKey={repositoryRefreshKey}
+                      if (data.sessions.length > 0) {
 
-          onSelect={(repoId)=>{
+                          setSelectedSession(data.sessions[0].id);
 
-              setSelectedRepository(repoId);
+                      } else {
 
-              setSelectedSession("");
+                          const session = await createSession(repoId);
 
-          }}
+                          setSelectedSession(session.session_id);
 
-      />
+                          await refreshSessions();
+                      }
+                  }}
+                />
 
-      <div className="px-3 pb-3">
+                {repositoryStatus && (
+                    <RepositoryStatsCard
+                        status={repositoryStatus.status}
+                        progress={repositoryStatus.progress}
+                        currentStage={repositoryStatus.current_stage}
+                    />
+                )}
 
-        <button
+                {repositoryStatus &&
+                  repositoryStatus.status !== "READY" && (
 
-          onClick={() => setImportOpen(true)}
+                      <RepositoryProcessingCard
+                          progress={repositoryStatus.progress}
+                          stage={repositoryStatus.current_stage}
+                          status={repositoryStatus.status}
+                      />
 
-          className="
-            w-full
-            rounded-lg
-            bg-zinc-800
-            hover:bg-zinc-700
-            py-2
-            text-sm
-            transition
-          "
+                  )}
 
-        >
-
-          + Import Repository
-
-        </button>
-
-      </div>
+                <div className="px-3 pb-3">
+                    <button
+                        onClick={() => setImportOpen(true)}
+                        className="
+                            w-full
+                            rounded-lg
+                            bg-zinc-800
+                            hover:bg-zinc-700
+                            py-2
+                            text-sm
+                            transition
+                        "
+                    >
+                        <div className="flex items-center justify-center gap-2">
+                            <FolderGit2 size={16} />
+                            Import Repository
+                        </div>
+                    </button>
+                </div>
+            </>
+        )}
 
         {/* Chat List */}
 
-        <div className="px-3 pt-3">
+      <div className="px-3 pt-3">
+        <div className="relative">
 
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search chats..."
-            className="
-              w-full
-              rounded-lg
-              bg-zinc-800
-              px-4
-              py-2
-              outline-none
-              text-sm
-            "
+          <Search
+              size={16}
+              className="absolute left-3 top-3 text-zinc-500"
           />
 
-        </div>
+          <input
+              value={search}
+              onChange={(e)=>setSearch(e.target.value)}
+              placeholder="Search conversations..."
+              className="
+                  w-full
+                  rounded-xl
+                  border
+                  border-zinc-800
+                  bg-zinc-900
+                  py-2.5
+                  pl-10
+                  pr-4
+                  text-sm
+                  outline-none
+                  focus:border-violet-500
+              "
+          />
+
+      </div>
+
+      </div>
 
         <div className="flex-1 overflow-y-auto px-2 py-3 space-y-1">
 
         {loading ? (
-          <p className="px-3 py-2 text-gray-400">Loading...</p>
+          <div className="px-3 py-3 text-sm text-zinc-500">
+
+            Loading conversations...
+
+          </div>
         ) : (
           filteredSessions.map((session) => (
 
@@ -395,9 +506,9 @@ async function handleRename(
               transition
 
               ${
-                selectedSession === session.id
-                  ? "bg-[#2f2f2f]"
-                  : "hover:bg-[#2a2a2a]"
+                selectedSession===session.id
+                  ? "bg-violet-500/10 border border-violet-500/20"
+                  : "hover:bg-zinc-900"
               }
             `}
           >
@@ -444,12 +555,29 @@ async function handleRename(
             ) : (
 
               <button
-                onClick={() =>
-                  setSelectedSession(session.id)
-                }
-                className="flex-1 text-left truncate"
+                  onClick={() =>
+                      setSelectedSession(session.id)
+                  }
+                  className="
+                      flex
+                      flex-1
+                      items-center
+                      text-left
+                      overflow-hidden
+                  "
               >
-                {session.title ?? "New Chat"}
+
+                  <MessageSquare
+                      size={16}
+                      className="mr-3 shrink-0 text-zinc-500"
+                  />
+
+                  <span className="truncate">
+
+                      {session.title ?? "New Chat"}
+
+                  </span>
+
               </button>
 
             )}
@@ -499,18 +627,18 @@ async function handleRename(
             menuOpen===session.id && (
 
             <div
-            className="
-            absolute
-            right-0
-            top-8
-            w-36
-            rounded-lg
-            bg-zinc-900
-            border
-            border-zinc-700
-            shadow-xl
-            z-50
-            "
+              className="
+              absolute
+              right-0
+              top-8
+              w-36
+              rounded-lg
+              bg-zinc-950
+              border
+              border-zinc-800
+              shadow-xl
+              z-50
+              "
             >
 
             <button
@@ -567,13 +695,67 @@ async function handleRename(
 
       {/* Bottom */}
 
-      <div className="border-t border-[#303030] p-3">
+        <div className="border-t border-zinc-800 p-3">
 
-        <button className="w-full rounded-lg hover:bg-[#2a2a2a] p-3 text-left">
-          👤 Yash
-        </button>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
 
-      </div>
+                <div className="flex items-center gap-3">
+
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-500/20">
+
+                        <User
+                            size={18}
+                            className="text-violet-300"
+                        />
+
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+
+                        <p className="truncate text-sm font-semibold">
+
+                            {user?.full_name}
+
+                        </p>
+
+                        <p className="truncate text-xs text-zinc-500">
+
+                            {user?.email}
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <button
+                    onClick={logout}
+                    className="
+                        mt-3
+                        flex
+                        w-full
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-lg
+                        border
+                        border-zinc-700
+                        py-2
+                        text-sm
+                        transition
+                        hover:bg-zinc-800
+                    "
+                >
+
+                    <LogOut size={16} />
+
+                    Logout
+
+                </button>
+
+            </div>
+
+        </div>
 
     </aside>
 

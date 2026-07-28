@@ -1,7 +1,9 @@
+from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.repositories.models import Repository
+from datetime import datetime
 
 
 class RepositoryRepository:
@@ -12,14 +14,20 @@ class RepositoryRepository:
         repository: Repository,
     ):
         db.add(repository)
-        await db.commit()
+
+        try:
+            await db.commit()
+        except Exception:
+            await db.rollback()
+            raise
+
         await db.refresh(repository)
         return repository
 
     @staticmethod
     async def get_by_id(
         db: AsyncSession,
-        repository_id,
+        repository_id: UUID,
     ):
         result = await db.execute(
             select(Repository).where(
@@ -61,9 +69,32 @@ class RepositoryRepository:
         return repository
 
     @staticmethod
+    async def update_progress(
+        db: AsyncSession,
+        repository: Repository,
+        status: str,
+        progress: int,
+        current_stage: str,
+        error_message: str | None = None,
+    ):
+
+        repository.status = status
+        repository.progress = progress
+        repository.current_stage = current_stage
+        repository.error_message = error_message
+
+        if status == "READY":
+            repository.indexed_at = datetime.utcnow()
+
+        await db.commit()
+        await db.refresh(repository)
+
+        return repository
+
+    @staticmethod
     async def update_local_path(
-        db,
-        repository,
+        db: AsyncSession,
+        repository: Repository,
         local_path: str,
     ):
         repository.local_path = local_path

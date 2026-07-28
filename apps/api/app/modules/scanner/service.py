@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.repositories.repository import RepositoryRepository
 from app.modules.scanner.detector import detect_language
-from app.modules.scanner.models import RepositoryFile
+from app.modules.scanner.models import RepositoryFile #type: ignore
 from app.modules.scanner.parser import collect_files
 from app.modules.scanner.repository import ScannerRepository
 

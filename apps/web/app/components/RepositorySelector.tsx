@@ -8,6 +8,9 @@ type Repository = {
   id: string;
   name: string;
   status: string;
+  progress: number;
+  current_stage: string;
+  github_url: string;
 };
 
 type Props = {
@@ -27,13 +30,15 @@ export default function RepositorySelector({
   const [repositories, setRepositories] = useState<Repository[]>([]);
 
   useEffect(() => {
+    if (!projectId && repositories.length > 0) {
+        setRepositories([]);
+    }
+}, [projectId, repositories.length]);
+
+  useEffect(() => {
 
     if (!projectId) {
-
-        setRepositories([]);
-
         return;
-
     }
 
     async function load() {
@@ -62,7 +67,29 @@ export default function RepositorySelector({
 
 }, [projectId, refreshKey]);
 
-  return (
+if (!projectId) {
+    return null;
+}
+
+if (repositories.length === 0) {
+    return (
+        <div className="px-3 pb-3">
+            <div className="rounded-xl border border-dashed border-zinc-700 p-4 text-center">
+
+                <p className="text-sm font-semibold text-zinc-300">
+                    No Repository Yet
+                </p>
+
+                <p className="mt-1 text-xs text-zinc-500">
+                    Import your first repository.
+                </p>
+
+            </div>
+        </div>
+    );
+}
+
+return (
 
     <div className="px-3 pb-3">
 

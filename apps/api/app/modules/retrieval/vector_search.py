@@ -51,6 +51,10 @@ class VectorSearch(RetrievalStrategy):
                     row["repository_file_id"]
                 ),
 
+                file_name=row["file_name"],
+
+                relative_path=row["relative_path"],
+
                 chunk_name=row["chunk_name"],
 
                 chunk_type=row["chunk_type"],
@@ -60,6 +64,7 @@ class VectorSearch(RetrievalStrategy):
                 end_line=row["end_line"],
 
                 content=row["content"],
+                
 
             )
 

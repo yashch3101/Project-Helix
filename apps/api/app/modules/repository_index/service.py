@@ -150,6 +150,11 @@ class RepositoryIndexService:
                 repository_file
             )
 
+        print(
+            file["name"],
+            file["extension"],
+        )
+
         await RepositoryIndexRepository.bulk_insert(
             db,
             database_files,

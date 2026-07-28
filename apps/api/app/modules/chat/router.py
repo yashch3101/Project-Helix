@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+
 from app.modules.chat.schemas import(
     CreateSessionRequest, 
     CreateSessionResponse, 
@@ -62,7 +63,10 @@ async def send_message(
         media_type="text/event-stream",
     )
 
-@router.get("/sessions")
+@router.get(
+    "/sessions",
+    response_model=ChatSessionListResponse,
+)
 async def list_sessions(
 
     repository_id: UUID,
@@ -76,9 +80,9 @@ async def list_sessions(
         repository_id=repository_id,
     )
 
-    return {
-        "sessions": sessions
-    }
+    return ChatSessionListResponse(
+        sessions=sessions,
+    )
 
 @router.get(
     "/{session_id}/messages",

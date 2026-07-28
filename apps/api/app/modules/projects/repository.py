@@ -17,11 +17,13 @@ class ProjectRepository:
         return project
 
     @staticmethod
-    async def get_all(
+    async def get_by_owner(
         db: AsyncSession,
+        owner_id,
     ):
         result = await db.execute(
             select(Project)
+            .where(Project.owner_id == owner_id)
             .order_by(Project.created_at.desc())
         )
 

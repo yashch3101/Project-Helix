@@ -1,17 +1,18 @@
 const API = "http://127.0.0.1:8000";
 
-export async function getSessions(
-    repositoryId: string
-) {
+export async function getSessions(repositoryId: string) {
 
-    const res = await fetch(
+    console.log("Repository ID:", repositoryId);
 
-        `${API}/chat/sessions?repository_id=${repositoryId}`
+    const url = `${API}/chat/sessions?repository_id=${repositoryId}`;
 
-    );
+    console.log("Fetching:", url);
+
+    const res = await fetch(url);
+
+    console.log("Status:", res.status);
 
     return res.json();
-
 }
 
 export async function getMessages(sessionId: string) {

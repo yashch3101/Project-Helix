@@ -1,6 +1,6 @@
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.retrieval.vector_search import VectorSearch
 from app.modules.retrieval.hybrid_search import HybridSearch
 
 
@@ -9,7 +9,7 @@ class RetrievalPipeline:
     @staticmethod
     async def retrieve(
         db: AsyncSession,
-        repository_id,
+        repository_id: UUID,
         query: str,
         top_k: int,
     ):

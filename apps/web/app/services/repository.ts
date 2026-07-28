@@ -1,3 +1,7 @@
+import type {
+    RepositoryStatusResponse,
+} from "../types/repository";
+
 const API = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getRepositories(
@@ -50,8 +54,30 @@ export async function importRepository(
 
     if (!res.ok) {
 
+        const error = await res.json();
+
         throw new Error(
-            "Import failed"
+            error.detail || "Import failed"
+        );
+
+    }
+
+    return res.json();
+
+}
+
+export async function getRepositoryStatus(
+    repositoryId: string,
+): Promise<RepositoryStatusResponse> {
+
+    const res = await fetch(
+        `${API}/repositories/${repositoryId}/status`
+    );
+
+    if (!res.ok) {
+
+        throw new Error(
+            "Failed to fetch repository status"
         );
 
     }

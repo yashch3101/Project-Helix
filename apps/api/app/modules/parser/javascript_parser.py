@@ -1,4 +1,5 @@
 import re
+from app.modules.parser.utils import find_block_end
 
 
 class JavaScriptParser:
@@ -42,6 +43,10 @@ class JavaScriptParser:
             r'function\s+([A-Za-z0-9_]+)'
         )
 
+        export_default_pattern = re.compile(
+            r"export\s+default\s+function\s+([A-Za-z0-9_]+)"
+        )
+
         # ----------------------------------------------------
         # ASYNC FUNCTION
         # ----------------------------------------------------
@@ -63,7 +68,11 @@ class JavaScriptParser:
         # ----------------------------------------------------
 
         arrow_pattern = re.compile(
-            r'const\s+([A-Za-z0-9_]+)\s*=\s*(?:async\s*)?\('
+            r"(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z0-9_]+)\s*=>"
+        )
+
+        export_arrow_pattern = re.compile(
+            r"export\s+const\s+([A-Za-z0-9_]+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z0-9_]+)\s*=>"
         )
 
         # ----------------------------------------------------
@@ -92,7 +101,10 @@ class JavaScriptParser:
 
                     "line_start": line_no,
 
-                    "line_end": line_no,
+                    "line_end": find_block_end(
+                        lines,
+                        line_no,
+                    ),
 
                     "parent": None,
 
@@ -110,6 +122,41 @@ class JavaScriptParser:
 
                 })
 
+            # ---------------- Export Default Function ----------------
+
+            match = export_default_pattern.search(line)
+            
+            if match:
+            
+                symbols.append({
+            
+                    "name": match.group(1),
+            
+                    "type": "function",
+            
+                    "line_start": line_no,
+            
+                    "line_end": find_block_end(
+                        lines,
+                        line_no,
+                    ),
+            
+                    "parent": None,
+            
+                    "docstring": None,
+            
+                    "inherits": [],
+            
+                    "decorators": [],
+            
+                    "parameters": [],
+            
+                    "return_type": None,
+            
+                    "is_async": False,
+            
+                })
+
             # ---------------- Export ----------------
 
             if export_pattern.search(line):
@@ -122,7 +169,10 @@ class JavaScriptParser:
 
                     "line_start": line_no,
 
-                    "line_end": line_no,
+                    "line_end": find_block_end(
+                        lines,
+                        line_no,
+                    ),
 
                     "parent": None,
 
@@ -144,7 +194,7 @@ class JavaScriptParser:
 
             match = function_pattern.search(line)
 
-            if match:
+            if match and not async_pattern.search(line) and not export_default_pattern.search(line):
 
                 symbols.append({
 
@@ -154,7 +204,10 @@ class JavaScriptParser:
 
                     "line_start": line_no,
 
-                    "line_end": line_no,
+                    "line_end": find_block_end(
+                        lines,
+                        line_no,
+                    ),
 
                     "parent": None,
 
@@ -186,7 +239,10 @@ class JavaScriptParser:
 
                     "line_start": line_no,
 
-                    "line_end": line_no,
+                    "line_end": find_block_end(
+                        lines,
+                        line_no,
+                    ),
 
                     "parent": None,
 
@@ -218,7 +274,10 @@ class JavaScriptParser:
 
                     "line_start": line_no,
 
-                    "line_end": line_no,
+                    "line_end": find_block_end(
+                        lines,
+                        line_no,
+                    ),
 
                     "parent": None,
 
@@ -250,7 +309,10 @@ class JavaScriptParser:
 
                     "line_start": line_no,
 
-                    "line_end": line_no,
+                    "line_end": find_block_end(
+                        lines,
+                        line_no,
+                    ),
 
                     "parent": None,
 
@@ -268,6 +330,41 @@ class JavaScriptParser:
 
                 })
 
+            # ---------------- Export Arrow Function ----------------
+
+            match = export_arrow_pattern.search(line)
+            
+            if match:
+            
+                symbols.append({
+            
+                    "name": match.group(1),
+            
+                    "type": "arrow_function",
+            
+                    "line_start": line_no,
+            
+                    "line_end": find_block_end(
+                        lines,
+                        line_no,
+                    ),
+            
+                    "parent": None,
+            
+                    "docstring": None,
+            
+                    "inherits": [],
+            
+                    "decorators": [],
+            
+                    "parameters": [],
+            
+                    "return_type": None,
+            
+                    "is_async": False,
+            
+                })
+
             # ---------------- Variables ----------------
 
             match = variable_pattern.search(line)
@@ -282,7 +379,10 @@ class JavaScriptParser:
 
                     "line_start": line_no,
 
-                    "line_end": line_no,
+                    "line_end": find_block_end(
+                        lines,
+                        line_no,
+                    ),
 
                     "parent": None,
 

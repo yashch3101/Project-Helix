@@ -1,5 +1,14 @@
 "use client";
 
+import {
+    Database,
+    GitBranch,
+    Boxes,
+    BrainCircuit,
+    Sparkles,
+    CheckCircle2,
+} from "lucide-react";
+
 type Trace = {
     retrieval_chunks: number;
     graph_edges: number;
@@ -16,38 +25,38 @@ export default function ReasoningFlow({
     const steps = [
 
         {
-            title: "Retrieval",
-            icon: "🔍",
+            title: "Semantic Retrieval",
+            icon: Database,
             value: `${trace.retrieval_chunks} chunks`,
         },
 
         {
-            title: "Graph Expansion",
-            icon: "🕸",
-            value: `${trace.graph_edges} nodes`,
+            title: "Knowledge Graph",
+            icon: GitBranch,
+            value: `${trace.graph_edges} edges`,
         },
 
         {
             title: "Dependency Expansion",
-            icon: "📦",
+            icon: Boxes,
             value: `${trace.dependencies} dependencies`,
         },
 
         {
             title: "Context Compression",
-            icon: "🧠",
+            icon: BrainCircuit,
             value: `${trace.context_chunks} chunks`,
         },
 
         {
-            title: "Gemini",
-            icon: "✨",
-            value: "LLM Generation",
+            title: "LLM Reasoning",
+            icon: Sparkles,
+            value: "Gemini Analysis",
         },
 
         {
-            title: "Final Answer",
-            icon: "✅",
+            title: "Final Response",
+            icon: CheckCircle2,
             value: "Completed",
         },
 
@@ -55,60 +64,101 @@ export default function ReasoningFlow({
 
     return (
 
-        <div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+    <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/70 backdrop-blur-md p-6">
 
-            <h3 className="font-semibold text-white mb-5">
+        <div className="flex items-center justify-between mb-6">
 
-                🧠 AI Reasoning Flow
+            <div>
 
-            </h3>
+                <h3 className="text-lg font-semibold text-white">
 
-            <div className="space-y-4">
+                    AI Reasoning Pipeline
 
-                {steps.map((step, index) => (
+                </h3>
 
-                    <div key={index}>
+                <p className="text-sm text-zinc-500 mt-1">
 
-                        <div className="flex items-center gap-4">
+                    Internal execution trace used to generate this answer.
 
-                            <div className="text-2xl">
+                </p>
 
-                                {step.icon}
+            </div>
 
-                            </div>
+            <div className="rounded-full bg-violet-500/10 border border-violet-500/20 px-3 py-1 text-xs text-violet-300">
 
-                            <div>
-
-                                <div className="font-medium">
-
-                                    {step.title}
-
-                                </div>
-
-                                <div className="text-sm text-zinc-400">
-
-                                    {step.value}
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        {index !== steps.length - 1 && (
-
-                            <div className="ml-4 h-6 border-l border-zinc-700 mt-2"></div>
-
-                        )}
-
-                    </div>
-
-                ))}
+                {steps.length} Steps
 
             </div>
 
         </div>
 
-    );
+        <div className="space-y-5">
 
+            {steps.map((step, index) => {
+
+                const Icon = step.icon;
+
+                return (
+
+                    <div
+                        key={index}
+                        className="relative flex gap-4"
+                    >
+
+                        <div className="flex flex-col items-center">
+
+                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/10 border border-violet-500/20">
+
+                                <Icon
+                                    size={20}
+                                    className="text-violet-300"
+                                />
+
+                            </div>
+
+                            {index !== steps.length - 1 && (
+
+                                <div className="mt-2 h-10 w-px bg-zinc-700"></div>
+
+                            )}
+
+                        </div>
+
+                        <div className="flex-1 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4 transition-all hover:border-violet-500/30">
+
+                            <div className="flex items-center justify-between">
+
+                                <h4 className="font-medium text-white">
+
+                                    {step.title}
+
+                                </h4>
+
+                                <span className="rounded-full bg-zinc-800 px-2 py-1 text-xs text-zinc-400">
+
+                                    Step {index + 1}
+
+                                </span>
+
+                            </div>
+
+                            <p className="mt-2 text-sm text-zinc-400">
+
+                                {step.value}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                );
+
+            })}
+
+        </div>
+
+    </div>
+
+    );
 }

@@ -10,11 +10,7 @@ type ChatInputProps = {
 
   stopGeneration: () => void;
 
-  question?: string;
-
-  onQuestionChange?: (
-    value:string
-    )=>void;
+  repositoryReady?: boolean;
 };
 
 export default function ChatInput({
@@ -22,6 +18,7 @@ export default function ChatInput({
   disabled,
   isStreaming,
   stopGeneration,
+  repositoryReady = true,
 }: ChatInputProps) {
 
   const [question, setQuestion] = useState("");
@@ -37,9 +34,13 @@ export default function ChatInput({
 
   return (
 
-    <div className="border-t border-[#303030] p-4 flex gap-3">
+    <div className="border-t border-[#303030] p-4">
+
+    <div className="flex gap-3 text-white placeholder:text-zinc-500">
+
 
       <input
+        disabled={!repositoryReady || disabled}
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
         onKeyDown={(e) => {
@@ -47,11 +48,19 @@ export default function ChatInput({
             handleSend();
           }
         }}
-        placeholder="Message Project Helix..."
+        placeholder={
+            repositoryReady
+                ? "Message Project Helix..."
+                : "Repository is still being prepared..."
+        }
         className="
           flex-1
           rounded-xl
-          bg-[#2b2b2b]
+          bg-zinc-900
+            border
+            border-zinc-800
+            focus:border-violet-500
+            transition-all
           px-5
           py-4
           outline-none
@@ -76,19 +85,25 @@ export default function ChatInput({
 
         <button
           onClick={handleSend}
-          disabled={disabled}
-          className="
-            bg-blue-600
-            hover:bg-blue-700
+          disabled={disabled || !repositoryReady}
+          className={`
             px-7
             rounded-xl
-          "
+            font-medium
+            transition-all
+            ${
+                repositoryReady
+                    ? "bg-violet-600 hover:bg-violet-500"
+                    : "bg-zinc-700 cursor-not-allowed"
+            }
+        `}
         >
           Send
         </button>
 
       )}
 
+    </div>
     </div>
 
   );
