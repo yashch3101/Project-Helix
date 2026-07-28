@@ -13,13 +13,12 @@ class Settings(BaseSettings):
     port: int = 8000
 
     database_url: str
+    alembic_database_url: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",
     )
-
-    groq_api_key: str
 
     groq_api_key: str
 
