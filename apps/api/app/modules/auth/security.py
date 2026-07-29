@@ -3,12 +3,22 @@ from app.core.config import settings
 
 import jwt
 from pwdlib import PasswordHash
+import traceback
 
 password_hash = PasswordHash.recommended()
 
 
 def hash_password(password: str) -> str:
-    return password_hash.hash(password)
+    try:
+        print("HASH START")
+        hashed = password_hash.hash(password)
+        print("HASH DONE")
+        return hashed
+
+    except Exception as e:
+        traceback.print_exc()
+        print("HASH ERROR:", repr(e))
+        raise
 
 
 def verify_password(password: str, hashed: str) -> bool:
