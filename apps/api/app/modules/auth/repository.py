@@ -22,11 +22,8 @@ class AuthRepository:
         user: User,
     ):
         db.add(user)
-        print("ADD DONE")
         await db.commit()
-        print("COMMIT DONE")
         await db.refresh(user)
-        print("REFRESH DONE")
         return user
 
     @staticmethod

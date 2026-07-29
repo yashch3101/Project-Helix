@@ -3,24 +3,12 @@ from app.core.config import settings
 
 import jwt
 from pwdlib import PasswordHash
-from argon2 import PasswordHasher
-import traceback
 
 password_hash = PasswordHash.recommended()
-ph = PasswordHasher()
 
 
 def hash_password(password: str) -> str:
-    try:
-        print("HASH START")
-        hashed = ph.hash(password)
-        print("HASH DONE")
-        return hashed
-
-    except Exception as e:
-        traceback.print_exc()
-        print("HASH ERROR:", repr(e))
-        raise
+    return password_hash.hash(password)
 
 
 def verify_password(password: str, hashed: str) -> bool:

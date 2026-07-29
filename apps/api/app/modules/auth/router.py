@@ -1,4 +1,3 @@
-import traceback
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -30,13 +29,9 @@ async def register(
 ):
     try:
         return await AuthService.register(db, payload)
-
-    except Exception as e:
-        traceback.print_exc()
-        print("REGISTER ERROR:", repr(e))
-
+    except ValueError as e:
         raise HTTPException(
-            status_code=500,
+            status_code=400,
             detail=str(e),
         )
 
@@ -54,13 +49,9 @@ async def login(
             payload.email,
             payload.password,
         )
-
-    except Exception as e:
-        traceback.print_exc()
-        print("LOGIN ERROR:", repr(e))
-
+    except ValueError as e:
         raise HTTPException(
-            status_code=500,
+            status_code=401,
             detail=str(e),
         )
 
