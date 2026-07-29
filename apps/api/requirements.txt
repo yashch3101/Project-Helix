@@ -69,7 +69,6 @@ PyJWT==2.13.0
 pyparsing==3.3.2
 python-dotenv==1.2.2
 pytz==2026.2
-pywin32==312
 PyYAML==6.0.3
 qdrant-client==1.18.0
 rank-bm25==0.2.2
