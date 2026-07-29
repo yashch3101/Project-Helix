@@ -19,34 +19,34 @@ async def lifespan(app: FastAPI):
     logger.info("BM25 CACHE WARMUP STARTED")
     logger.info("=" * 80)
 
-    async with AsyncSessionLocal() as db:
+    # async with AsyncSessionLocal() as db:
 
-        result = await db.execute(
-            select(Repository)
-        )
+    #     result = await db.execute(
+    #         select(Repository)
+    #     )
 
-        repositories = result.scalars().all()
+    #     repositories = result.scalars().all()
 
-        for repository in repositories:
+    #     for repository in repositories:
 
-            try:
+    #         try:
 
-                logger.info(
-                    f"Loading BM25 -> {repository.name}"
-                )
+    #             logger.info(
+    #                 f"Loading BM25 -> {repository.name}"
+    #             )
 
-                await IndexingService.rebuild(
-                    db=db,
-                    repository_id=repository.id,
-                )
+    #             await IndexingService.rebuild(
+    #                 db=db,
+    #                 repository_id=repository.id,
+    #             )
 
-            except Exception as e:
+    #         except Exception as e:
 
-                logger.error(
-                    f"Failed -> {repository.name}"
-                )
+    #             logger.error(
+    #                 f"Failed -> {repository.name}"
+    #             )
 
-                logger.error(str(e))
+    #             logger.error(str(e))
 
     logger.info("=" * 80)
     logger.info("BM25 CACHE READY")
