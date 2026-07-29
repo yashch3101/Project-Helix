@@ -23,26 +23,40 @@ class AuthService:
         db: AsyncSession,
         payload: UserCreate,
     ):
+        print("STEP 1")
+
         existing = await AuthRepository.get_by_email(
             db,
             payload.email,
         )
 
+        print("STEP 2")
+
         if existing:
             raise ValueError("Email already exists")
+
+        print("STEP 3")
+
+        password = hash_password(payload.password)
+
+        print("STEP 4")
 
         user = User(
             full_name=payload.full_name,
             email=payload.email,
-            hashed_password=hash_password(
-                payload.password
-            ),
+            hashed_password=password,
         )
 
-        return await AuthRepository.create_user(
+        print("STEP 5")
+
+        result = await AuthRepository.create_user(
             db,
             user,
         )
+
+        print("STEP 6")
+
+        return result
 
     @staticmethod
     async def login(
