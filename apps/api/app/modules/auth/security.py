@@ -3,15 +3,17 @@ from app.core.config import settings
 
 import jwt
 from pwdlib import PasswordHash
+from argon2 import PasswordHasher
 import traceback
 
 password_hash = PasswordHash.recommended()
+ph = PasswordHasher()
 
 
 def hash_password(password: str) -> str:
     try:
         print("HASH START")
-        hashed = password_hash.hash(password)
+        hashed = ph.hash(password)
         print("HASH DONE")
         return hashed
 
