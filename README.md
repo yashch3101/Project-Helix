@@ -207,15 +207,11 @@ apps/
 
 ## Dashboard
 
-> Replace with screenshot
-
 ![Dashboard](./assets/dashboard.png)
 
 ---
 
 ## Repository Import
-
-> Replace with screenshot
 
 ![Repository Import](./assets/import.png)
 
@@ -223,15 +219,11 @@ apps/
 
 ## AI Chat
 
-> Replace with screenshot
-
 ![Chat](./assets/chat.png)
 
 ---
 
 ## Mobile Responsive UI
-
-> Replace with screenshot
 
 ![Mobile](./assets/mobile.png)
 
